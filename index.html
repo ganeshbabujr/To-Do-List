@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9329/9329260.png">
+    
+    <title>To Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }, 
+                        dark: { bg: '#020617', surface: '#0f172a', surface2: '#1e293b', border: '#334155' },
+                    },
+                    animation: {
+                        'enter': 'enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        enter: { '0%': { opacity: 0, transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; height: 100dvh; width: 100vw; overflow: hidden; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .dark .glass { background: rgba(2, 6, 23, 0.9); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .glass-dock { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.15); }
+        .dark .glass-dock { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5); }
+
+        .stagger-1 { animation-delay: 50ms; } .stagger-2 { animation-delay: 100ms; } .stagger-3 { animation-delay: 150ms; }
+        .confetti { position: absolute; width: 6px; height: 6px; background-color: #f00; animation: explode 0.8s ease-out forwards; pointer-events: none; border-radius: 50%; z-index: 100; }
+        @keyframes explode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+
+        select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; appearance: none; }
+        .dark select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); }
+    </style>
+</head>
+<body class="bg-brand-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 flex justify-center items-center">
+
+    <div class="w-full h-full sm:h-[850px] sm:w-[450px] sm:rounded-[2.5rem] bg-[#FAFAFA] dark:bg-dark-bg shadow-2xl relative flex flex-col overflow-hidden transition-colors duration-300 ring-1 ring-slate-200 dark:ring-slate-800">
+        
+        <div class="sticky top-0 z-30 pt-10 pb-4 px-6 glass transition-all duration-300">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="flex items-center gap-2 mb-1 opacity-60">
+                        <i class="ph-bold ph-calendar-blank text-xs"></i>
+                        <p class="text-[10px] font-bold uppercase tracking-widest" id="header-date">TODAY</p>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
+                        Hi, <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-purple-600 cursor-pointer" onclick="openProfileModal()" id="header-greeting">User</span>
+                    </h1>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-white dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-500 hover:scale-105 active:scale-95 transition-all shadow-sm">
+                        <i class="ph-fill ph-sun dark:hidden text-lg text-amber-500"></i>
+                        <i class="ph-fill ph-moon hidden dark:block text-lg text-brand-400"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 p-[2px] cursor-pointer active:scale-95 transition-transform" onclick="openProfileModal()">
+                        <div class="w-full h-full rounded-full bg-white dark:bg-dark-bg flex items-center justify-center">
+                            <span class="font-black text-xs text-brand-600 dark:text-brand-400" id="header-lvl">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 relative">
+                <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="search-input" onkeyup="renderTasks()" placeholder="Search..." class="w-full bg-white dark:bg-dark-surface2/50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-sm font-bold shadow-sm focus:ring-2 focus:ring-brand-500/20 placeholder:text-slate-400 dark:text-white transition-all">
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar relative z-0" id="main-scroll">
+            
+            <div id="view-lists" class="p-5 w-full">
+                <div class="flex items-center justify-between mb-6 px-1">
+                    <h2 class="text-lg font-bold flex items-center gap-2" id="view-title">
+                        <span class="w-2 h-6 bg-brand-500 rounded-full"></span>
+                        Dashboard
+                    </h2>
+                    <span class="text-[10px] font-bold bg-slate-200 dark:bg-dark-surface2 px-2.5 py-1 rounded-md text-slate-500 dark:text-slate-400" id="task-counter">0 ITEMS</span>
+                </div>
+
+                <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 opacity-50">
+                    <i class="ph-duotone ph-clipboard-text text-6xl text-slate-300 dark:text-slate-700 mb-4"></i>
+                    <p class="text-sm font-bold text-slate-400">All caught up!</p>
+                </div>
+
+                <div id="task-list" class="space-y-3 pb-4"></div>
+
+                <div style="height: 180px; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
+            </div>
+
+            <div id="view-calendar" class="hidden p-5 w-full">
+                 <div class="flex justify-between items-center mb-6 bg-white dark:bg-dark-surface2 p-2 rounded-2xl shadow-sm">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"><i class="ph-bold ph-caret-left"></i></button>
+                    <h2 class="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider" id="cal-month-year">Month</h2>
+                    <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"><i class="ph-bold ph-caret-right"></i></button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center mb-2 text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">
+                    <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-sm mb-8"></div>
+                
+                <div class="bg-white dark:bg-dark-surface2 rounded-3xl p-5 border border-slate-100 dark:border-dark-border shadow-sm">
+                    <h3 class="font-bold text-slate-400 text-xs uppercase tracking-wider mb-4" id="selected-date-label">Selected Tasks</h3>
+                    <div id="selected-day-list" class="space-y-3"></div>
+                </div>
+                
+                <div style="height: 180px; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
+            </div>
+        </div>
+
+        <div class="pointer-events-none fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent dark:from-[#0b1120] dark:via-[#0b1120]/90 z-10 sm:rounded-b-[2.5rem]"></div>
+
+        <div class="absolute bottom-6 left-6 right-6 z-50">
+            <div class="glass-dock h-16 rounded-[2rem] flex items-center justify-between px-2 relative">
+                <button onclick="switchView('all')" id="nav-all" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-brand-600 dark:text-brand-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-fill ph-squares-four text-xl"></i></button>
+                <button onclick="switchView('daily')" id="nav-daily" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-check-circle text-xl"></i></button>
+                
+                <div class="relative -top-6 mx-2">
+                    <button onclick="openModal()" class="w-16 h-16 bg-brand-600 hover:bg-brand-500 text-white rounded-[1.8rem] shadow-xl shadow-brand-600/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 active:rotate-90">
+                        <i class="ph-bold ph-plus text-3xl"></i>
+                    </button>
+                </div>
+
+                <button onclick="switchView('routine')" id="nav-routine" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-arrows-clockwise text-xl"></i></button>
+                <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-calendar-blank text-xl"></i></button>
+            </div>
+        </div>
+
+        <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300">
+            <div id="modal-content" class="absolute inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[420px] bg-white dark:bg-dark-surface rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl transform translate-y-full transition-transform duration-300 flex flex-col max-h-[90vh]">
+                
+                <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight" id="modal-title">Create New</h2>
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-surface2 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"><i class="ph-bold ph-x"></i></button>
+                </div>
+
+                <form onsubmit="handleSaveTask(event)" class="p-8 space-y-6 overflow-y-auto no-scrollbar">
+                    
+                    <div class="bg-slate-100 dark:bg-dark-surface2 p-1.5 rounded-2xl flex relative">
+                        <label class="flex-1 relative z-10 cursor-pointer">
+                            <input type="radio" name="type" value="task" checked class="peer hidden" onchange="updateTypeUI()">
+                            <div class="py-2.5 text-center text-sm font-bold rounded-xl text-slate-500 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-dark-surface peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm transition-all flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-check-square"></i> Task
+                            </div>
+                        </label>
+                        <label class="flex-1 relative z-10 cursor-pointer">
+                            <input type="radio" name="type" value="event" class="peer hidden" onchange="updateTypeUI()">
+                            <div class="py-2.5 text-center text-sm font-bold rounded-xl text-slate-500 dark:text-slate-400 peer-checked:bg-white dark:peer-checked:bg-dark-surface peer-checked:text-indigo-500 dark:peer-checked:text-indigo-400 peer-checked:shadow-sm transition-all flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-confetti"></i> Event
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">What needs doing?</label>
+                        <div class="relative group">
+                            <input type="text" id="inp-title" required class="w-full bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl px-4 py-4 text-base font-semibold outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:text-white transition-all placeholder:text-slate-400" placeholder="e.g., Submit Q4 Report">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</label>
+                            <div class="relative">
+                                <select id="inp-category" class="w-full bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl pl-4 pr-10 py-3.5 text-sm font-bold outline-none focus:border-brand-500 dark:text-white transition-all">
+                                    <option value="Personal">Personal</option>
+                                    <option value="Work">Work</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Study">Study</option>
+                                    <option value="Social">Social</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Repeat</label>
+                            <div class="relative">
+                                <select id="inp-repeat" class="w-full bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl pl-4 pr-10 py-3.5 text-sm font-bold outline-none focus:border-brand-500 dark:text-white transition-all">
+                                    <option value="once">Never</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="twice_month">2x Month</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                         <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Schedule</label>
+                         <div class="flex gap-3">
+                             <div onclick="document.getElementById('inp-date').showPicker()" class="flex-1 bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl p-3.5 relative cursor-pointer hover:border-brand-400 dark:hover:border-slate-500 transition-colors group">
+                                 <div class="flex items-center gap-2 mb-1">
+                                    <i class="ph-bold ph-calendar-blank text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">Date</span>
+                                 </div>
+                                 <p class="text-sm font-bold dark:text-white truncate" id="date-display">Today</p>
+                                 <input type="date" id="inp-date" required class="absolute inset-0 opacity-0 z-0 pointer-events-none" onchange="updateDateDisplay(this.value)">
+                             </div>
+                             <div onclick="document.getElementById('inp-time').showPicker()" class="flex-1 bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl p-3.5 relative cursor-pointer hover:border-brand-400 dark:hover:border-slate-500 transition-colors group">
+                                 <div class="flex items-center gap-2 mb-1">
+                                    <i class="ph-bold ph-clock text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">Time</span>
+                                 </div>
+                                 <p class="text-sm font-bold dark:text-white truncate" id="time-display">Anytime</p>
+                                 <input type="time" id="inp-time" class="absolute inset-0 opacity-0 z-0 pointer-events-none" onchange="updateTimeDisplay(this.value)">
+                             </div>
+                         </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-check text-xl"></i> <span id="btn-save-text">Save Task</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="levelup-modal" class="absolute inset-0 bg-black/90 z-[70] hidden flex flex-col items-center justify-center text-center p-6 animate-enter backdrop-blur-xl">
+            <i class="ph-duotone ph-crown text-8xl text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-float"></i>
+            <h2 class="text-4xl font-black text-white mb-2">LEVEL UP!</h2>
+            <p class="text-slate-400 text-lg mb-8">You are now Level <span id="new-level-display" class="text-white font-bold text-2xl">2</span></p>
+            <button onclick="closeLevelUp()" class="bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform">Continue</button>
+        </div>
+
+        <div id="profile-modal" class="absolute inset-0 bg-slate-900/60 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeProfileModal()">
+             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] bg-white dark:bg-dark-surface rounded-3xl p-6 shadow-2xl scale-95 transition-transform">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-brand-100 dark:bg-dark-surface2 rounded-full mx-auto flex items-center justify-center mb-3">
+                        <span class="text-4xl font-black text-brand-600" id="profile-level-lg">1</span>
+                    </div>
+                    <h2 class="text-xl font-bold dark:text-white">Your Progress</h2>
+                    <p class="text-xs text-slate-400 font-bold uppercase mt-1"><span id="profile-xp">0</span> XP Total</p>
+                </div>
+                <div class="mb-6">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1"><span>Current</span><span>Next Level</span></div>
+                    <div class="h-3 bg-slate-100 dark:bg-dark-surface2 rounded-full overflow-hidden"><div id="xp-bar" class="h-full bg-brand-500 transition-all duration-500" style="width: 0%"></div></div>
+                </div>
+                <div class="space-y-3">
+                    <input type="text" id="inp-username" placeholder="Your Name" class="w-full bg-slate-50 dark:bg-dark-surface2 rounded-xl px-4 py-3 text-center font-bold text-sm outline-none focus:ring-2 focus:ring-brand-500 dark:text-white" onchange="saveProfile()">
+                    <div class="flex gap-2">
+                        <button onclick="exportData()" class="flex-1 py-3 bg-slate-100 dark:bg-dark-surface2 rounded-xl text-xs font-bold dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Backup</button>
+                        <div class="relative flex-1">
+                            <input type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer" onchange="importData(this)">
+                            <button class="w-full py-3 bg-slate-100 dark:bg-dark-surface2 rounded-xl text-xs font-bold dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Restore</button>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+    </div>
+
+    <script>
+        const CATEGORIES = { 'Personal': 'green', 'Work': 'blue', 'Health': 'red', 'Study': 'amber', 'Social': 'purple' };
+        let tasks = [], userData = { name: 'Ganesh', xp: 0, level: 1 }, currentView = 'all', editingId = null;
+        let viewDate = new Date(), selectedCalendarDate = getTodayStr();
+
+        window.onload = () => {
+            if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+            if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+            loadData();
+            document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            document.getElementById('inp-date').value = getTodayStr();
+            updateDateDisplay(getTodayStr());
+            setInterval(checkMidnightReset, 60000); checkMidnightReset();
+        };
+
+        function getTodayStr() { 
+            const d = new Date(); 
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function loadData() {
+            try {
+                const t = localStorage.getItem('lvlup_tasks_v6'); const u = localStorage.getItem('lvlup_user_v6');
+                if(t) tasks = JSON.parse(t); if(u) userData = JSON.parse(u);
+                else { tasks = [{ id: 1, title: 'Welcome!', category: 'Personal', type: 'task', repeat: 'once', date: getTodayStr(), time: '', completed: false }]; saveData(); }
+            } catch(e) { tasks=[]; }
+            updateUI();
+        }
+        function saveData() { localStorage.setItem('lvlup_tasks_v6', JSON.stringify(tasks)); localStorage.setItem('lvlup_user_v6', JSON.stringify(userData)); }
+
+        function updateUI() {
+            document.getElementById('header-greeting').innerText = userData.name;
+            document.getElementById('header-lvl').innerText = userData.level;
+            document.getElementById('profile-level-lg').innerText = userData.level;
+            document.getElementById('profile-xp').innerText = userData.xp;
+            document.getElementById('inp-username').value = userData.name;
+            const p = ((userData.xp - Math.pow(userData.level - 1, 2) * 100) / (Math.pow(userData.level, 2) * 100 - Math.pow(userData.level - 1, 2) * 100)) * 100;
+            document.getElementById('xp-bar').style.width = `${Math.min(100, Math.max(0, p))}%`;
+            renderTasks();
+        }
+
+        function renderTasks() {
+            if(currentView === 'calendar') { renderCalendar(); return; }
+            const list = document.getElementById('task-list'); list.innerHTML = '';
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const today = getTodayStr();
+            
+            const titles = { 'all': 'Dashboard', 'daily': 'One-Time Tasks', 'routine': 'Habits & Routines' };
+            document.getElementById('view-title').innerHTML = `<span class="w-2 h-6 bg-brand-500 rounded-full"></span> ${titles[currentView]}`;
+
+            let filtered = tasks.filter(t => {
+                if(search && !t.title.toLowerCase().includes(search)) return false;
+                
+                // Dashboard: Show ALL tasks due today (completed or not) OR Pending tasks from past/future (if repeat is once)
+                if(currentView === 'all') { 
+                    if (t.repeat !== 'once') return isTaskDue(t, today); // Routines: Only show if due today
+                    
+                    // One-Time Tasks:
+                    // 1. Show if incomplete (Past/Present/Future)
+                    // 2. Show if Completed AND Date is Today
+                    return !t.completed || t.date === today;
+                }
+                
+                // Daily Tab: Show ALL One-Time tasks for TODAY (Completed or Not)
+                if(currentView === 'daily') { 
+                    return t.repeat === 'once' && t.date === today; 
+                }
+                
+                // Routine Tab: Show ALL Repeating tasks
+                if(currentView === 'routine') { return t.repeat !== 'once'; }
+                
+                return false;
+            });
+
+            filtered.sort((a,b) => { 
+                // Sort Completed to bottom
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                const dateA = a.date + (a.time || "23:59");
+                const dateB = b.date + (b.time || "23:59");
+                return dateA.localeCompare(dateB);
+            });
+            
+            document.getElementById('task-counter').innerText = `${filtered.length} ITEMS`;
+            
+            if(filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            else { document.getElementById('empty-state').classList.add('hidden'); filtered.forEach((t, i) => list.innerHTML += createTaskHTML(t, today, i)); }
+            
+            ['all','daily','routine','calendar'].forEach(id => {
+                const el = document.getElementById('nav-'+id);
+                if(currentView === id) { el.classList.add('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.remove('text-slate-400'); } 
+                else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); }
+            });
+        }
+
+        function createTaskHTML(t, today, index) {
+            const color = CATEGORIES[t.category] || 'gray';
+            const icon = t.repeat !== 'once' ? 'ph-arrows-clockwise' : 'ph-check';
+            
+            let overdueBadge = '';
+            if(t.repeat === 'once' && !t.completed && t.date < today) {
+                const d1 = new Date(today); const d2 = new Date(t.date);
+                const diff = Math.ceil((d1 - d2) / (1000 * 60 * 60 * 24));
+                overdueBadge = `<span class="ml-2 text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md animate-pulse">${diff} DAYS LATE</span>`;
+            }
+            
+            let dateDisplay = "";
+            if(t.date === today) dateDisplay = "Today";
+            else {
+                const d = new Date(t.date);
+                dateDisplay = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+            }
+
+            // ICON COLOR LOGIC:
+            // Completed = Grey Faded
+            // Pending = Bright Brand Color
+            const btnClass = t.completed 
+                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400' 
+                : 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-500';
+
+            const titleClass = t.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-800 dark:text-white';
+
+            return `<div class="group flex items-center bg-white dark:bg-dark-surface2 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-border animate-enter stagger-${(index%5)+1} relative overflow-hidden transition-all hover:border-brand-300" onclick="editTask(${t.id})">
+                <button onclick="toggleTask(${t.id}, event)" class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 transition-all ${btnClass}"><i class="ph-bold ${icon} text-xl transform transition-transform active:scale-75"></i></button>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <span class="text-[10px] font-bold uppercase text-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 px-2 py-0.5 rounded-md">${t.category}</span>
+                        ${t.time ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${formatTime(t.time)}</span>` : ''}
+                        ${t.repeat === 'once' && t.date !== today ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-calendar"></i> ${dateDisplay}</span>` : ''}
+                    </div>
+                    <div class="flex items-center"><h3 class="font-bold ${titleClass} truncate">${t.title}</h3>${overdueBadge}</div>
+                </div>
+                <button onclick="deleteTask(${t.id}, event)" class="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors ml-2"><i class="ph-bold ph-trash"></i></button>
+            </div>`;
+        }
+
+        function handleSaveTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('inp-title').value, cat = document.getElementById('inp-category').value, type = document.querySelector('input[name="type"]:checked').value;
+            const repeat = document.getElementById('inp-repeat').value, date = document.getElementById('inp-date').value, time = document.getElementById('inp-time').value;
+            if(editingId) { const idx = tasks.findIndex(t => t.id === editingId); if(idx > -1) tasks[idx] = { ...tasks[idx], title, category: cat, type, repeat, date, time }; }
+            else { tasks.push({ id: Date.now(), title, category: cat, type, repeat, date, time, completed: false, lastCompleted: null }); }
+            saveData(); closeModal(); renderTasks();
+        }
+
+        function toggleTask(id, e) {
+            e.stopPropagation(); const t = tasks.find(x => x.id === id); if(!t) return;
+            if(!t.completed) { t.completed = true; t.lastCompleted = getTodayStr(); addXP(15); spawnConfetti(e.clientX, e.clientY); } 
+            else { t.completed = false; t.lastCompleted = null; addXP(-15); }
+            saveData(); renderTasks();
+        }
+        function deleteTask(id, e) { e.stopPropagation(); if(confirm('Delete?')) { tasks = tasks.filter(t => t.id !== id); saveData(); renderTasks(); } }
+        function editTask(id) {
+            const t = tasks.find(x => x.id === id); if(!t) return; editingId = id;
+            document.getElementById('inp-title').value = t.title; document.getElementById('inp-category').value = t.category;
+            document.getElementById('inp-repeat').value = t.repeat; document.getElementById('inp-date').value = t.date;
+            document.getElementById('inp-time').value = t.time;
+            const radios = document.getElementsByName('type'); radios.forEach(r => r.checked = (r.value === t.type));
+            updateDateDisplay(t.date); updateTimeDisplay(t.time);
+            document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update";
+            openModalLogic();
+        }
+
+        function isTaskDue(t, viewDateStr) {
+            if(t.repeat === 'once') return t.date === viewDateStr;
+            const start = new Date(t.date); start.setHours(0,0,0,0);
+            const current = new Date(viewDateStr); current.setHours(0,0,0,0);
+            if(current < start) return false;
+            
+            if(t.repeat === 'daily') return true;
+            if(t.repeat === 'weekly') return start.getDay() === current.getDay();
+            if(t.repeat === 'monthly') return start.getDate() === current.getDate();
+            if(t.repeat === 'yearly') return start.getMonth() === current.getMonth() && start.getDate() === current.getDate();
+            if(t.repeat === 'twice_month') {
+                const sDate = start.getDate();
+                const cDate = current.getDate();
+                if (cDate === sDate) return true;
+                let next = sDate + 15;
+                const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+                if(next > daysInMonth) next -= daysInMonth; 
+                return cDate === next;
+            }
+            return false;
+        }
+
+        function checkMidnightReset() { const lr = localStorage.getItem('lastRun_v6'); const td = getTodayStr(); if(lr !== td) { tasks.forEach(t => { if(t.repeat !== 'once') t.completed = false; }); saveData(); localStorage.setItem('lastRun_v6', td); renderTasks(); } }
+        function addXP(amount) { userData.xp += amount; if(userData.xp < 0) userData.xp = 0; if(userData.xp >= Math.pow(userData.level, 2) * 100) { userData.level++; document.getElementById('new-level-display').innerText = userData.level; document.getElementById('levelup-modal').classList.remove('hidden'); } saveData(); updateUI(); }
+        
+        function openModal() { 
+            editingId = null; 
+            document.querySelector('form').reset(); 
+            document.getElementById('inp-date').value = getTodayStr(); 
+            updateDateDisplay(getTodayStr()); 
+            updateTimeDisplay(''); 
+            document.getElementById('modal-title').innerText = "New Task"; 
+            document.getElementById('btn-save-text').innerText = "Save Task"; 
+            document.getElementById('inp-repeat').value = currentView === 'routine' ? 'daily' : 'once'; 
+            openModalLogic(); 
+        }
+        function openModalLogic() { const m = document.getElementById('modal-overlay'), c = document.getElementById('modal-content'); m.classList.remove('hidden'); setTimeout(()=>m.classList.remove('opacity-0'),10); c.classList.remove('translate-y-full'); }
+        function closeModal() { const m = document.getElementById('modal-overlay'), c = document.getElementById('modal-content'); c.classList.add('translate-y-full'); m.classList.add('opacity-0'); setTimeout(()=>m.classList.add('hidden'),300); }
+        function switchView(v) { currentView = v; updateUI(); document.getElementById('view-lists').classList.toggle('hidden', v === 'calendar'); document.getElementById('view-calendar').classList.toggle('hidden', v !== 'calendar'); if(v==='calendar') renderCalendar(); }
+        function updateDateDisplay(val) { if(!val) return; const [y,m,d] = val.split('-'); const dateObj = new Date(y, m-1, d); document.getElementById('date-display').innerText = (val === getTodayStr()) ? "Today" : dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
+        function updateTimeDisplay(val) { document.getElementById('time-display').innerText = val ? formatTime(val) : 'Anytime'; }
+        function formatTime(t) { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h); d.setMinutes(m); return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light'); }
+        function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('profile-modal').classList.remove('opacity-0'),10); }
+        function closeProfileModal() { document.getElementById('profile-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('profile-modal').classList.add('hidden'),300); }
+        function saveProfile() { userData.name = document.getElementById('inp-username').value; saveData(); updateUI(); }
+        function closeLevelUp() { document.getElementById('levelup-modal').classList.add('hidden'); }
+        function spawnConfetti(x, y) { const c = ['#6366f1','#ec4899','#fbbf24']; for(let i=0;i<15;i++){ const p=document.createElement('div'); p.className='confetti'; p.style.left=x+'px'; p.style.top=y+'px'; p.style.backgroundColor=c[Math.floor(Math.random()*3)]; p.style.setProperty('--tx',(Math.random()-0.5)*150+'px'); p.style.setProperty('--ty',(Math.random()-0.5)*150+'px'); document.body.appendChild(p); setTimeout(()=>p.remove(),800); } }
+        function updateTypeUI() {}
+
+        function renderCalendar() {
+             const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); grid.innerHTML = '';
+             const year = viewDate.getFullYear(), month = viewDate.getMonth(); label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+             const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+             for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>';
+             for(let d=1; d<=daysInMonth; d++) {
+                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                 const isSel = dateStr === selectedCalendarDate, isToday = dateStr === getTodayStr(); const hasTask = tasks.some(t => isTaskDue(t, dateStr));
+                 let cls = "h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ";
+                 if(isSel) cls += "bg-brand-600 text-white shadow-md font-bold"; else if(isToday) cls += "bg-brand-100 text-brand-700 font-bold"; else cls += "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700";
+                 grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="${cls} relative">${d}${hasTask && !isSel ? `<span class="absolute bottom-1 w-1 h-1 bg-brand-400 rounded-full"></span>` : ''}</div>`;
+             }
+             renderSelectedDay();
+        }
+        function selDate(d) { selectedCalendarDate = d; renderCalendar(); }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); renderCalendar(); }
+        function renderSelectedDay() {
+             const list = document.getElementById('selected-day-list'); list.innerHTML = '';
+             const dTasks = tasks.filter(t => isTaskDue(t, selectedCalendarDate));
+             document.getElementById('selected-date-label').innerText = new Date(selectedCalendarDate).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+             if(dTasks.length===0) list.innerHTML = '<p class="text-xs text-slate-400 italic">No tasks.</p>';
+             else dTasks.forEach((t,i) => list.innerHTML += createTaskHTML(t, selectedCalendarDate, i));
+        }
+        function exportData() { const s = JSON.stringify({tasks,userData}); const a = document.createElement('a'); a.href='data:application/json,'+encodeURIComponent(s); a.download='lvlup_v6_backup.json'; a.click(); }
+        function importData(inp) { const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result); tasks=d.tasks||[]; userData=d.userData||{name:'User',xp:0,level:1}; saveData(); updateUI(); alert("Success!"); closeProfileModal();}catch(err){alert("Error");}}; r.readAsText(f); }
+    </script>
+</body>
+</html>
