@@ -59,8 +59,9 @@
         .progress-ring__circle { transition: stroke-dashoffset 0.35s; transform: rotate(-90deg); transform-origin: 50% 50%; }
         
         /* Heatmap Grid */
-        .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .heatmap-cell { aspect-ratio: 1; border-radius: 4px; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .heatmap-cell { aspect-ratio: 1; border-radius: 6px; transition: transform 0.2s; }
+        .heatmap-cell:hover { transform: scale(1.2); }
     </style>
 </head>
 <body class="bg-brand-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 flex justify-center items-center">
@@ -75,7 +76,7 @@
                         <p class="text-[10px] font-bold uppercase tracking-widest" id="header-date">TODAY</p>
                     </div>
                     <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
-                        Hi, <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-purple-600 cursor-pointer" onclick="openProfileModal()" id="header-greeting">User</span>
+                        Hi, <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-purple-600 cursor-pointer hover:opacity-80 transition-opacity" onclick="openProfileModal()" id="header-greeting">Ganesh</span>
                     </h1>
                 </div>
 
@@ -322,36 +323,68 @@
         </div>
 
         <div id="profile-modal" class="absolute inset-0 bg-slate-900/60 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeProfileModal()">
-             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] bg-white dark:bg-dark-surface rounded-3xl p-6 shadow-2xl scale-95 transition-transform">
-                <div class="text-center mb-6">
-                    <div class="w-20 h-20 bg-brand-100 dark:bg-dark-surface2 rounded-full mx-auto flex items-center justify-center mb-3">
-                        <span class="text-4xl font-black text-brand-600" id="profile-level-lg">1</span>
-                    </div>
-                    <h2 class="text-xl font-bold dark:text-white">Your Progress</h2>
-                    <div class="flex justify-center gap-4 mt-2">
-                        <p class="text-xs text-slate-400 font-bold uppercase"><span id="profile-xp">0</span> XP</p>
-                        <p class="text-xs text-orange-500 font-bold uppercase"><span id="profile-streak">0</span> Streak</p>
-                    </div>
-                </div>
+             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] bg-white dark:bg-dark-surface rounded-[2rem] shadow-2xl scale-95 transition-transform overflow-hidden">
                 
-                <div class="mb-6">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase mb-2">Activity (Last 30 Days)</h3>
-                    <div id="heatmap-container" class="heatmap-grid bg-slate-50 dark:bg-dark-surface2 p-2 rounded-xl border border-slate-100 dark:border-dark-border">
-                        </div>
+                <div class="h-32 bg-gradient-to-r from-violet-500 to-fuchsia-500 relative">
+                    <button onclick="closeProfileModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
                 </div>
 
-                <div class="space-y-3">
-                    <input type="text" id="inp-username" placeholder="Your Name" class="w-full bg-slate-50 dark:bg-dark-surface2 rounded-xl px-4 py-3 text-center font-bold text-sm outline-none focus:ring-2 focus:ring-brand-500 dark:text-white" onchange="saveProfile()">
-                    <button onclick="requestNotificationPermission()" class="w-full py-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-bell-ringing"></i> Enable Notifications
-                    </button>
-                    <div class="flex gap-2">
-                        <button onclick="exportData()" class="flex-1 py-3 bg-slate-100 dark:bg-dark-surface2 rounded-xl text-xs font-bold dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Backup</button>
-                        <div class="relative flex-1">
-                            <input type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer" onchange="importData(this)">
-                            <button class="w-full py-3 bg-slate-100 dark:bg-dark-surface2 rounded-xl text-xs font-bold dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Restore</button>
+                <div class="px-6 relative">
+                    <div class="w-24 h-24 rounded-full bg-white dark:bg-dark-surface p-1.5 -mt-12 mx-auto mb-3 shadow-md">
+                        <div class="w-full h-full rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl text-slate-300">
+                            <i class="ph-fill ph-user"></i>
                         </div>
                     </div>
+                    
+                    <div class="text-center mb-6">
+                        <input type="text" id="inp-username" placeholder="Enter Name" class="w-full text-center text-2xl font-bold bg-transparent outline-none dark:text-white placeholder:text-slate-300 focus:text-brand-500 transition-colors" onchange="saveProfile()">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Level <span id="profile-level-lg">1</span> Achiever</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mb-6">
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                            <i class="ph-fill ph-star text-yellow-400 text-xl mb-1"></i>
+                            <p class="text-lg font-black dark:text-white" id="profile-xp">0</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">XP</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                            <i class="ph-fill ph-fire text-orange-500 text-xl mb-1"></i>
+                            <p class="text-lg font-black dark:text-white" id="profile-streak">0</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Streak</p>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                            <i class="ph-fill ph-chart-bar text-brand-500 text-xl mb-1"></i>
+                            <p class="text-lg font-black dark:text-white">Top</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Rank</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Consistency</h3>
+                            <span class="text-[9px] font-bold bg-green-100 text-green-600 px-1.5 py-0.5 rounded">30 DAYS</span>
+                        </div>
+                        <div id="heatmap-container" class="heatmap-grid">
+                            </div>
+                    </div>
+
+                    <div class="space-y-2 pb-6">
+                        <button onclick="requestNotificationPermission()" class="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-between px-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                            <span class="flex items-center gap-2"><i class="ph-fill ph-bell-ringing text-brand-500"></i> Notifications</span>
+                            <i class="ph-bold ph-caret-right text-xs opacity-50"></i>
+                        </button>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="exportData()" class="flex-1 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">Backup</button>
+                            <div class="relative flex-1">
+                                <input type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer" onchange="importData(this)">
+                                <button class="w-full py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">Restore</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
              </div>
         </div>
@@ -362,8 +395,9 @@
         const CATEGORIES = { 'Personal': 'green', 'Work': 'blue', 'Health': 'red', 'Study': 'amber', 'Social': 'purple' };
         const NOTIFICATION_SOUND = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         
+        // DEFAULT NAME SET HERE:
+        let userData = { name: 'Ganesh', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {}, lastBriefingDate: null };
         let tasks = [];
-        let userData = { name: 'User', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {}, lastBriefingDate: null };
         
         let currentView = 'dashboard';
         let editingId = null;
@@ -401,7 +435,7 @@
 
         // --- 1. CORE LOGIC: PERIOD-BASED RESET ---
         function checkMidnightReset() { 
-            const lastRunDate = localStorage.getItem('lastRun_v15'); 
+            const lastRunDate = localStorage.getItem('lastRun_v17'); 
             const todayStr = getTodayStr();
             const now = new Date(); 
             
@@ -426,7 +460,7 @@
                 }); 
                 
                 saveData(); 
-                localStorage.setItem('lastRun_v15', todayStr); 
+                localStorage.setItem('lastRun_v17', todayStr); 
                 renderTasks(); 
             } 
         }
@@ -496,20 +530,41 @@
              return `${year}-${month}-${day}`;
         }
         function getTodayStr() { return todayStr(new Date()); }
+        
+        function getEndOfWeekStr() {
+            const d = new Date();
+            // Calculate next Sunday
+            const endOfWeek = new Date();
+            endOfWeek.setDate(d.getDate() + (7 - d.getDay())); 
+            return todayStr(endOfWeek);
+        }
 
-        // --- 2. RENDER LOGIC ---
+        // --- 2. RENDER LOGIC (UPDATED FOR DASHBOARD FILTER) ---
         function renderTasks() {
             const list = document.getElementById('list-view');
             const search = document.getElementById('search-input').value.toLowerCase();
             const today = getTodayStr();
+            const endOfWeek = getEndOfWeekStr();
 
             let filtered = tasks.filter(t => {
                 if(search && !t.title.toLowerCase().includes(search)) return false;
                 
                 if(currentView === 'dashboard') {
-                    if (t.repeat === 'once') return true; 
-                    if (t.repeat !== 'once') return t.date <= today;
+                    // Hide if completed (Matrix shows active)
+                    if (t.completed) return false; 
+
+                    // 1. Temporary Tasks: Show Overdue + Today
+                    if (t.repeat === 'once') {
+                        return t.date <= today;
+                    }
+
+                    // 2. Routine Tasks: Show Overdue + Today + This Week
+                    if (t.repeat !== 'once') {
+                        // Allow routines that are past due OR due within this week
+                        return t.date <= endOfWeek;
+                    }
                 }
+                
                 if(currentView === 'tasks') return t.repeat === 'once'; 
                 if(currentView === 'routine') return t.repeat !== 'once'; 
                 return false;
@@ -562,7 +617,7 @@
                 subInfo = `<div class="mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-24"><div class="h-full bg-brand-400" style="width:${pct}%"></div></div>`;
             }
             
-            // Overdue Badge (Universal)
+            // Overdue Badge
             let overdueBadge = '';
             if(!t.completed && t.date < today) {
                 const diff = Math.ceil((new Date(today) - new Date(t.date)) / (86400000));
@@ -634,7 +689,7 @@
 
         // --- DATA OPERATIONS ---
         function loadData() {
-            const CURRENT_VER = 'v15'; 
+            const CURRENT_VER = 'v17'; 
             let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
             let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
 
@@ -642,15 +697,15 @@
                 try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
                 if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
             } else {
-                const old = localStorage.getItem('lvlup_tasks_v14') || localStorage.getItem('lvlup_tasks_v13');
+                const old = localStorage.getItem('lvlup_tasks_v16') || localStorage.getItem('lvlup_tasks_v15');
                 if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
             }
             updateUI();
         }
 
         function saveData() {
-            localStorage.setItem('lvlup_tasks_v15', JSON.stringify(tasks));
-            localStorage.setItem('lvlup_user_v15', JSON.stringify(userData));
+            localStorage.setItem('lvlup_tasks_v17', JSON.stringify(tasks));
+            localStorage.setItem('lvlup_user_v17', JSON.stringify(userData));
         }
 
         function handleSaveTask(e) {
