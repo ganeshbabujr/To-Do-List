@@ -1,7 +1,7 @@
 {
   "name": "To Do List",
   "short_name": "To List",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
@@ -17,7 +17,17 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Task",
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/992/992651.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Eisenhower Matrix",
+      "url": "./index.html?view=matrix",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/2620/2620556.png", "sizes": "96x96", "type": "image/png" }]
+    }
   ]
 }
-
-
