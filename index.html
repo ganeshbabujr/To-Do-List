@@ -10,6 +10,7 @@
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9329/9329260.png">
     
     <title>To Do List - Level Up</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,15 +25,8 @@
                         brand: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }, 
                         dark: { bg: '#020617', surface: '#0f172a', surface2: '#1e293b', border: '#334155' },
                     },
-                    animation: {
-                        'enter': 'enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        enter: { '0%': { opacity: 0, transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
-                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } }
-                    }
+                    animation: { 'enter': 'enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' },
+                    keyframes: { enter: { '0%': { opacity: 0, transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } } }
                 }
             }
         }
@@ -58,7 +52,6 @@
         
         .progress-ring__circle { transition: stroke-dashoffset 0.35s; transform: rotate(-90deg); transform-origin: 50% 50%; }
         
-        /* Heatmap Grid */
         .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .heatmap-cell { aspect-ratio: 1; border-radius: 6px; transition: transform 0.2s; }
         .heatmap-cell:hover { transform: scale(1.2); }
@@ -165,17 +158,13 @@
         <div class="absolute bottom-6 left-6 right-6 z-50">
             <div class="glass-dock h-16 rounded-[2rem] flex items-center justify-between px-1 relative">
                 <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-brand-600 dark:text-brand-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-fill ph-grid-four text-xl"></i></button>
-                
                 <button onclick="switchView('tasks')" id="nav-tasks" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-check-square-offset text-xl"></i></button>
-                
                 <div class="relative -top-6 mx-1">
                     <button onclick="openModal()" class="w-16 h-16 bg-brand-600 hover:bg-brand-500 text-white rounded-[1.8rem] shadow-xl shadow-brand-600/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 active:rotate-90">
                         <i class="ph-bold ph-plus text-3xl"></i>
                     </button>
                 </div>
-
                 <button onclick="switchView('routine')" id="nav-routine" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-arrows-clockwise text-xl"></i></button>
-                
                 <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-calendar-blank text-xl"></i></button>
             </div>
         </div>
@@ -262,18 +251,21 @@
                              </div>
                              
                              <div class="flex-1 relative">
-                                <select id="inp-repeat" class="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full" onchange="updateRepeatDisplay(this.value)">
-                                    <option value="once">Never</option>
+                                <select id="inp-repeat" class="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full text-slate-900" onchange="updateRepeatDisplay(this.value)">
+                                    <option value="once">Once</option>
                                     <option value="daily">Daily</option>
                                     <option value="weekly">Weekly</option>
                                     <option value="monthly">Monthly</option>
+                                    <option value="semi_monthly">Twice a Month</option>
+                                    <option value="bimonthly">Every 2 Months</option>
+                                    <option value="yearly">Yearly</option>
                                 </select>
                                 <div class="bg-slate-50 dark:bg-dark-surface2 border border-slate-200 dark:border-dark-border rounded-2xl p-3.5 relative pointer-events-none h-full">
                                     <div class="flex items-center gap-2 mb-1">
                                         <i class="ph-bold ph-arrows-clockwise text-slate-400"></i>
                                         <span class="text-[10px] font-bold text-slate-400 uppercase">Repeat</span>
                                     </div>
-                                    <p class="text-sm font-bold dark:text-white truncate" id="repeat-display">Never</p>
+                                    <p class="text-sm font-bold dark:text-white truncate" id="repeat-display">Once</p>
                                 </div>
                              </div>
 
@@ -323,65 +315,99 @@
         </div>
 
         <div id="profile-modal" class="absolute inset-0 bg-slate-900/60 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300" onclick="if(event.target === this) closeProfileModal()">
-             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] bg-white dark:bg-dark-surface rounded-[2rem] shadow-2xl scale-95 transition-transform overflow-hidden">
+             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] bg-white dark:bg-dark-surface rounded-[2rem] shadow-2xl scale-95 transition-transform overflow-hidden flex flex-col max-h-[90vh]">
                 
-                <div class="h-32 bg-gradient-to-r from-violet-500 to-fuchsia-500 relative">
-                    <button onclick="closeProfileModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors">
-                        <i class="ph-bold ph-x"></i>
-                    </button>
-                </div>
+                <button onclick="closeProfileModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 z-20 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:scale-110 transition-transform">
+                    <i class="ph-bold ph-x"></i>
+                </button>
 
-                <div class="px-6 relative">
-                    <div class="w-24 h-24 rounded-full bg-white dark:bg-dark-surface p-1.5 -mt-12 mx-auto mb-3 shadow-md">
-                        <div class="w-full h-full rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl text-slate-300">
-                            <i class="ph-fill ph-user"></i>
-                        </div>
-                    </div>
+                <div class="p-6 pb-4 overflow-y-auto no-scrollbar">
                     
-                    <div class="text-center mb-6">
-                        <input type="text" id="inp-username" placeholder="Enter Name" class="w-full text-center text-2xl font-bold bg-transparent outline-none dark:text-white placeholder:text-slate-300 focus:text-brand-500 transition-colors" onchange="saveProfile()">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Level <span id="profile-level-lg">1</span> Achiever</p>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2 mb-6">
-                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
-                            <i class="ph-fill ph-star text-yellow-400 text-xl mb-1"></i>
-                            <p class="text-lg font-black dark:text-white" id="profile-xp">0</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">XP</p>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
-                            <i class="ph-fill ph-fire text-orange-500 text-xl mb-1"></i>
-                            <p class="text-lg font-black dark:text-white" id="profile-streak">0</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Streak</p>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
-                            <i class="ph-fill ph-chart-bar text-brand-500 text-xl mb-1"></i>
-                            <p class="text-lg font-black dark:text-white">Top</p>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Rank</p>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <div class="flex justify-between items-center mb-2 px-1">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Consistency</h3>
-                            <span class="text-[9px] font-bold bg-green-100 text-green-600 px-1.5 py-0.5 rounded">30 DAYS</span>
-                        </div>
-                        <div id="heatmap-container" class="heatmap-grid">
+                    <div class="flex flex-col items-center justify-center mb-6 relative">
+                        <div class="relative w-28 h-28 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90 absolute inset-0">
+                                <circle cx="56" cy="56" r="52" stroke="currentColor" stroke-width="3" fill="transparent" class="text-slate-100 dark:text-slate-800" />
+                                <circle id="level-ring" cx="56" cy="56" r="52" stroke="currentColor" stroke-width="3" fill="transparent" class="text-brand-500 progress-ring__circle" stroke-dasharray="326" stroke-dashoffset="0" stroke-linecap="round" />
+                            </svg>
+                            
+                            <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-dark-surface relative z-10 bg-slate-100">
+                                <img id="profile-img" src="https://ui-avatars.com/api/?name=Ganesh&background=6366f1&color=fff&size=128" class="w-full h-full object-cover">
                             </div>
+
+                            <button onclick="document.getElementById('file-upload').click()" class="absolute bottom-1 right-1 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center z-20 shadow-lg hover:scale-110 transition-transform">
+                                <i class="ph-fill ph-camera"></i>
+                            </button>
+                            <input type="file" id="file-upload" class="hidden" accept="image/*" onchange="handleProfilePicUpload(this)">
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <input type="text" id="inp-username" class="text-2xl font-black text-center bg-transparent outline-none dark:text-white w-full" onchange="saveProfile()">
+                            <span class="inline-block px-3 py-1 bg-brand-100 text-brand-600 rounded-full text-[10px] font-bold uppercase tracking-wider mt-1">Level <span id="profile-level-lg">1</span></span>
+                        </div>
                     </div>
 
-                    <div class="space-y-2 pb-6">
-                        <button onclick="requestNotificationPermission()" class="w-full py-3.5 rounded-xl text-sm font-bold flex items-center justify-between px-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
-                            <span class="flex items-center gap-2"><i class="ph-fill ph-bell-ringing text-brand-500"></i> Notifications</span>
-                            <i class="ph-bold ph-caret-right text-xs opacity-50"></i>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl flex flex-col justify-between h-24">
+                            <i class="ph-fill ph-lightning text-indigo-500 text-xl"></i>
+                            <div>
+                                <p class="text-2xl font-black text-slate-800 dark:text-white" id="profile-xp">0</p>
+                                <p class="text-[10px] font-bold text-indigo-400 uppercase">Total XP</p>
+                            </div>
+                        </div>
+                        <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl flex flex-col justify-between h-24">
+                            <i class="ph-fill ph-fire text-orange-500 text-xl"></i>
+                            <div>
+                                <p class="text-2xl font-black text-slate-800 dark:text-white" id="profile-streak">0</p>
+                                <p class="text-[10px] font-bold text-orange-400 uppercase">Day Streak</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl flex flex-col justify-between h-24 col-span-2">
+                            <div class="flex justify-between items-start">
+                                <i class="ph-fill ph-check-circle text-emerald-500 text-xl"></i>
+                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md">ALL TIME</span>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-black text-slate-800 dark:text-white" id="profile-total-tasks">0</p>
+                                <p class="text-[10px] font-bold text-emerald-400 uppercase">Tasks Completed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl mb-6 border border-slate-100 dark:border-slate-700">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Activity</h3>
+                            <div class="flex gap-1">
+                                <div class="w-2 h-2 rounded-sm bg-slate-200"></div>
+                                <div class="w-2 h-2 rounded-sm bg-brand-500"></div>
+                            </div>
+                        </div>
+                        <div id="heatmap-container" class="heatmap-grid"></div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <button onclick="requestNotificationPermission()" class="w-full p-3 rounded-xl flex items-center justify-between text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="ph-bold ph-bell"></i></div>
+                                Notifications
+                            </div>
+                            <span class="text-[10px] text-slate-400">ON</span>
                         </button>
                         
-                        <div class="flex gap-2">
-                            <button onclick="exportData()" class="flex-1 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">Backup</button>
-                            <div class="relative flex-1">
-                                <input type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer" onchange="importData(this)">
-                                <button class="w-full py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">Restore</button>
+                        <button onclick="exportData()" class="w-full p-3 rounded-xl flex items-center justify-between text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="ph-bold ph-download-simple"></i></div>
+                                Backup Data
                             </div>
+                        </button>
+
+                        <div class="relative">
+                            <input type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer z-10" onchange="importData(this)">
+                            <button class="w-full p-3 rounded-xl flex items-center justify-between text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center"><i class="ph-bold ph-upload-simple"></i></div>
+                                    Restore Data
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -395,9 +421,8 @@
         const CATEGORIES = { 'Personal': 'green', 'Work': 'blue', 'Health': 'red', 'Study': 'amber', 'Social': 'purple' };
         const NOTIFICATION_SOUND = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         
-        // DEFAULT NAME SET HERE:
-        let userData = { name: 'Ganesh', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {}, lastBriefingDate: null };
         let tasks = [];
+        let userData = { name: 'Ganesh', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {}, lastBriefingDate: null, profilePic: null };
         
         let currentView = 'dashboard';
         let editingId = null;
@@ -433,20 +458,18 @@
             switchView('dashboard');
         };
 
-        // --- 1. CORE LOGIC: PERIOD-BASED RESET ---
+        // --- 1. CORE LOGIC ---
         function checkMidnightReset() { 
-            const lastRunDate = localStorage.getItem('lastRun_v17'); 
+            const lastRunDate = localStorage.getItem('lastRun_v20'); 
             const todayStr = getTodayStr();
             const now = new Date(); 
             
             if(lastRunDate !== todayStr) { 
-                // A. Temporary Tasks: Delete if completed
                 tasks = tasks.filter(t => {
                     if (t.repeat === 'once' && t.completed) return false; 
                     return true;
                 });
 
-                // B. Routines: The "Fresh Start" Logic
                 tasks.forEach(t => { 
                     if(t.repeat !== 'once' && t.completed) { 
                         if (shouldResetRoutine(t, now)) {
@@ -460,7 +483,7 @@
                 }); 
                 
                 saveData(); 
-                localStorage.setItem('lastRun_v17', todayStr); 
+                localStorage.setItem('lastRun_v20', todayStr); 
                 renderTasks(); 
             } 
         }
@@ -533,13 +556,12 @@
         
         function getEndOfWeekStr() {
             const d = new Date();
-            // Calculate next Sunday
             const endOfWeek = new Date();
             endOfWeek.setDate(d.getDate() + (7 - d.getDay())); 
             return todayStr(endOfWeek);
         }
 
-        // --- 2. RENDER LOGIC (UPDATED FOR DASHBOARD FILTER) ---
+        // --- 2. RENDER LOGIC ---
         function renderTasks() {
             const list = document.getElementById('list-view');
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -550,19 +572,9 @@
                 if(search && !t.title.toLowerCase().includes(search)) return false;
                 
                 if(currentView === 'dashboard') {
-                    // Hide if completed (Matrix shows active)
                     if (t.completed) return false; 
-
-                    // 1. Temporary Tasks: Show Overdue + Today
-                    if (t.repeat === 'once') {
-                        return t.date <= today;
-                    }
-
-                    // 2. Routine Tasks: Show Overdue + Today + This Week
-                    if (t.repeat !== 'once') {
-                        // Allow routines that are past due OR due within this week
-                        return t.date <= endOfWeek;
-                    }
+                    if (t.repeat === 'once') return t.date <= today;
+                    if (t.repeat !== 'once') return t.date <= endOfWeek;
                 }
                 
                 if(currentView === 'tasks') return t.repeat === 'once'; 
@@ -617,14 +629,12 @@
                 subInfo = `<div class="mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-24"><div class="h-full bg-brand-400" style="width:${pct}%"></div></div>`;
             }
             
-            // Overdue Badge
             let overdueBadge = '';
             if(!t.completed && t.date < today) {
                 const diff = Math.ceil((new Date(today) - new Date(t.date)) / (86400000));
                 overdueBadge = `<span class="ml-2 text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md animate-pulse">${diff} DAYS LATE</span>`;
             }
 
-            // Date Tag
             let dateTag = '';
             if(t.date === today) dateTag = 'Today';
             else {
@@ -656,31 +666,24 @@
             </div>`;
         }
         
-        // --- 3. CALENDAR WITH RED OVERDUE MARKER ---
         function renderCalendar() { 
             const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); 
             grid.innerHTML = ''; 
             const year = viewDate.getFullYear(), month = viewDate.getMonth(); 
             label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); 
             const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(); 
-            
             const today = getTodayStr();
-
             for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>'; 
-            
             for(let d=1; d<=daysInMonth; d++) { 
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
                 const isSel = dateStr === selectedCalendarDate, isToday = dateStr === today; 
-                
                 const dayTasks = tasks.filter(t => t.date === dateStr && !t.completed);
                 const hasTask = dayTasks.length > 0;
-                
                 let marker = '';
                 if (hasTask) {
-                    if (dateStr < today) marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>`; // Overdue
-                    else marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-brand-400 rounded-full"></span>`; // Future/Today
+                    if (dateStr < today) marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>`; 
+                    else marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-brand-400 rounded-full"></span>`; 
                 }
-
                 let cls = isSel ? "bg-brand-600 text-white" : (isToday ? "bg-brand-100 text-brand-700" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"); 
                 grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="h-8 flex items-center justify-center rounded-lg cursor-pointer ${cls} relative">${d}${marker}</div>`; 
             } 
@@ -689,7 +692,7 @@
 
         // --- DATA OPERATIONS ---
         function loadData() {
-            const CURRENT_VER = 'v17'; 
+            const CURRENT_VER = 'v20'; 
             let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
             let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
 
@@ -697,15 +700,15 @@
                 try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
                 if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
             } else {
-                const old = localStorage.getItem('lvlup_tasks_v16') || localStorage.getItem('lvlup_tasks_v15');
+                const old = localStorage.getItem('lvlup_tasks_v19') || localStorage.getItem('lvlup_tasks_v18');
                 if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
             }
             updateUI();
         }
 
         function saveData() {
-            localStorage.setItem('lvlup_tasks_v17', JSON.stringify(tasks));
-            localStorage.setItem('lvlup_user_v17', JSON.stringify(userData));
+            localStorage.setItem('lvlup_tasks_v20', JSON.stringify(tasks));
+            localStorage.setItem('lvlup_user_v20', JSON.stringify(userData));
         }
 
         function handleSaveTask(e) {
@@ -737,19 +740,14 @@
             document.getElementById('inp-category').value = t.category;
             document.getElementById('inp-priority').value = t.priority || 'medium';
             const repeatSel = document.getElementById('inp-repeat');
-            if(!repeatSel.querySelector('option[value="semi_monthly"]')) {
-                const opt1 = document.createElement('option'); opt1.value = 'semi_monthly'; opt1.innerText = 'Twice a Month (1st & 16th)'; repeatSel.appendChild(opt1);
-                const opt2 = document.createElement('option'); opt2.value = 'bimonthly'; opt2.innerText = 'Every 2 Months'; repeatSel.appendChild(opt2);
-                const opt3 = document.createElement('option'); opt3.value = 'yearly'; opt3.innerText = 'Yearly'; repeatSel.appendChild(opt3);
-            }
+            
             repeatSel.value = t.repeat; 
             document.getElementById('inp-date').value = t.date;
             document.getElementById('inp-time').value = t.time;
             const radios = document.getElementsByName('type'); radios.forEach(r => r.checked = (r.value === t.type));
             currentSubtasks = t.subtasks ? JSON.parse(JSON.stringify(t.subtasks)) : [];
             renderSubtasksEdit(); updateDateDisplay(t.date); updateTimeDisplay(t.time); 
-            let rText = t.repeat; if(t.repeat === 'semi_monthly') rText = "Twice/Month"; else if(t.repeat === 'bimonthly') rText = "Every 2 Months"; else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
-            document.getElementById('repeat-display').innerText = rText;
+            updateRepeatDisplay(t.repeat);
             document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update"; openModalLogic();
         }
         
@@ -776,7 +774,40 @@
         function updateSubText(idx, val) { currentSubtasks[idx].text = val; }
         function removeSub(idx) { currentSubtasks.splice(idx, 1); renderSubtasksEdit(); }
 
-        function updateUI() { document.getElementById('header-greeting').innerText = userData.name; document.getElementById('header-lvl').innerText = userData.level; document.getElementById('header-streak').innerText = userData.streak; document.getElementById('profile-xp').innerText = userData.xp; document.getElementById('inp-username').value = userData.name; renderTasks(); }
+        function updateUI() { 
+            document.getElementById('header-greeting').innerText = userData.name; 
+            document.getElementById('header-lvl').innerText = userData.level; 
+            document.getElementById('header-streak').innerText = userData.streak; 
+            document.getElementById('profile-xp').innerText = userData.xp; 
+            document.getElementById('profile-streak').innerText = userData.streak;
+            document.getElementById('profile-total-tasks').innerText = tasks.filter(t => t.completed || t.lastCompleted).length; 
+            document.getElementById('inp-username').value = userData.name; 
+            
+            const levelCap = Math.pow(userData.level, 2) * 100;
+            const currentLevelBase = Math.pow(userData.level - 1, 2) * 100;
+            const progress = Math.max(0, Math.min(100, ((userData.xp - currentLevelBase) / (levelCap - currentLevelBase)) * 100));
+            const offset = 326 - (progress / 100 * 326);
+            document.getElementById('level-ring').style.strokeDashoffset = offset;
+            document.getElementById('profile-level-lg').innerText = userData.level;
+
+            if(userData.profilePic) document.getElementById('profile-img').src = userData.profilePic;
+
+            renderTasks(); 
+        }
+
+        function handleProfilePicUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result;
+                    userData.profilePic = base64;
+                    saveData();
+                    updateUI();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function checkStreak() { const today = getTodayStr(); const last = userData.lastStreakDate; if(!last) return; const diffDays = Math.ceil(Math.abs(new Date(today) - new Date(last)) / (1000 * 60 * 60 * 24)); if (diffDays > 1) { userData.streak = 0; saveData(); updateUI(); } }
         function updateStreak() { const today = getTodayStr(); if (userData.lastStreakDate !== today) { userData.streak++; userData.lastStreakDate = today; saveData(); updateUI(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); } }
         function addXP(amount) { userData.xp += amount; if(userData.xp < 0) userData.xp = 0; if(userData.xp >= Math.pow(userData.level, 2) * 100) { userData.level++; document.getElementById('new-level-display').innerText = userData.level; document.getElementById('levelup-modal').classList.remove('hidden'); } saveData(); updateUI(); }
@@ -788,8 +819,13 @@
         function updateDateDisplay(val) { if(!val) return; const [y,m,d] = val.split('-'); const dateObj = new Date(y, m-1, d); document.getElementById('date-display').innerText = (val === getTodayStr()) ? "Today" : dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
         function updateTimeDisplay(val) { document.getElementById('time-display').innerText = val ? formatTime(val) : 'Anytime'; }
         function updateRepeatDisplay(val) { 
-             let rText = val; if(val === 'semi_monthly') rText = "Twice/Month"; else if(val === 'bimonthly') rText = "Every 2 Months"; else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
-             document.getElementById('repeat-display').innerText = rText; document.getElementById('inp-repeat').value = val; 
+             let rText = val; 
+             if(val === 'once') rText = "Once";
+             else if(val === 'semi_monthly') rText = "Twice/Month"; 
+             else if(val === 'bimonthly') rText = "Every 2 Months"; 
+             else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
+             document.getElementById('repeat-display').innerText = rText; 
+             document.getElementById('inp-repeat').value = val; 
         }
         function formatTime(t) { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h); d.setMinutes(m); return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light'); }
