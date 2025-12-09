@@ -118,33 +118,27 @@
                     <p class="text-sm font-bold text-slate-400">All caught up!</p>
                 </div>
 
-                <div id="task-list" class="space-y-3 pb-4"></div>
-                <div style="height: 180px; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
-            </div>
+                <div id="matrix-view" class="hidden space-y-6 pb-4">
+                     <div>
+                        <h3 class="text-xs font-black text-red-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-lightning"></i> Do First (Urgent/High)</h3>
+                        <div id="matrix-q1" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-calendar-check"></i> Schedule (High)</h3>
+                        <div id="matrix-q2" class="space-y-3"></div>
+                    </div>
+                     <div>
+                        <h3 class="text-xs font-black text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-users"></i> Normal (Due Soon)</h3>
+                        <div id="matrix-q3" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-trash"></i> Low Priority</h3>
+                        <div id="matrix-q4" class="space-y-3"></div>
+                    </div>
+                </div>
 
-            <div id="view-matrix" class="hidden p-5 w-full space-y-6">
-                <div class="flex items-center gap-2 mb-2 px-1">
-                    <span class="w-2 h-6 bg-purple-500 rounded-full"></span>
-                    <h2 class="text-lg font-bold">Priority Matrix</h2>
-                </div>
-                
-                <div>
-                    <h3 class="text-xs font-black text-red-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-lightning"></i> Do First (Urgent & High)</h3>
-                    <div id="matrix-q1" class="space-y-3"></div>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-blue-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-calendar-check"></i> Schedule (High Priority)</h3>
-                    <div id="matrix-q2" class="space-y-3"></div>
-                </div>
-                 <div>
-                    <h3 class="text-xs font-black text-amber-500 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-users"></i> Normal (Due Soon)</h3>
-                    <div id="matrix-q3" class="space-y-3"></div>
-                </div>
-                <div>
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-fill ph-trash"></i> Low Priority</h3>
-                    <div id="matrix-q4" class="space-y-3"></div>
-                </div>
-                
+                <div id="list-view" class="hidden space-y-3 pb-4"></div>
+
                 <div style="height: 180px; width: 100%; flex-shrink: 0;" aria-hidden="true"></div>
             </div>
 
@@ -169,8 +163,9 @@
         <div class="pointer-events-none fixed bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA]/90 to-transparent dark:from-[#0b1120] dark:via-[#0b1120]/90 z-10 sm:rounded-b-[2.5rem]"></div>
         <div class="absolute bottom-6 left-6 right-6 z-50">
             <div class="glass-dock h-16 rounded-[2rem] flex items-center justify-between px-1 relative">
-                <button onclick="switchView('all')" id="nav-all" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-brand-600 dark:text-brand-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-fill ph-squares-four text-xl"></i></button>
-                <button onclick="switchView('matrix')" id="nav-matrix" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-grid-four text-xl"></i></button>
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-brand-600 dark:text-brand-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-fill ph-grid-four text-xl"></i></button>
+                
+                <button onclick="switchView('tasks')" id="nav-tasks" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-check-square-offset text-xl"></i></button>
                 
                 <div class="relative -top-6 mx-1">
                     <button onclick="openModal()" class="w-16 h-16 bg-brand-600 hover:bg-brand-500 text-white rounded-[1.8rem] shadow-xl shadow-brand-600/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 active:rotate-90">
@@ -179,6 +174,7 @@
                 </div>
 
                 <button onclick="switchView('routine')" id="nav-routine" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-arrows-clockwise text-xl"></i></button>
+                
                 <button onclick="switchView('calendar')" id="nav-calendar" class="flex-1 h-12 rounded-[1.5rem] flex items-center justify-center text-slate-400 transition-all active:scale-95 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"><i class="ph-bold ph-calendar-blank text-xl"></i></button>
             </div>
         </div>
@@ -362,171 +358,293 @@
 
     </div>
 
-    <script>
+<script>
         const CATEGORIES = { 'Personal': 'green', 'Work': 'blue', 'Health': 'red', 'Study': 'amber', 'Social': 'purple' };
-        // History tracks completions by date for heatmap: { "2023-12-08": 5, ... }
-        let tasks = [], userData = { name: 'User', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {} };
-        let currentView = 'all', editingId = null, currentSubtasks = [];
-        let viewDate = new Date(), selectedCalendarDate = getTodayStr();
+        const NOTIFICATION_SOUND = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        
+        let tasks = [];
+        let userData = { name: 'User', xp: 0, level: 1, streak: 0, lastStreakDate: null, history: {}, lastBriefingDate: null };
+        
+        let currentView = 'dashboard';
+        let editingId = null;
+        let currentSubtasks = [];
+        let viewDate = new Date();
+        let selectedCalendarDate = getTodayStr();
 
-        // Focus Mode Variables
         let focusInterval, focusTime = 25 * 60, isFocusing = false, currentFocusId = null;
         const FULL_DASH_ARRAY = 2 * Math.PI * 120; 
         
-        // URL Params for Shortcuts
         const urlParams = new URLSearchParams(window.location.search);
         
         window.onload = () => {
             if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
             if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+            
             loadData();
+            
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            
+            checkMidnightReset(); 
+            
             document.getElementById('inp-date').value = getTodayStr();
             updateDateDisplay(getTodayStr());
+            
             checkStreak();
             initNotifications();
             renderHeatmap();
             
             setInterval(() => { checkMidnightReset(); checkReminders(); }, 60000); 
-            checkMidnightReset();
 
-            // Handle App Shortcuts
             if(urlParams.get('action') === 'new') { openModal(); }
-            if(urlParams.get('view') === 'matrix') { switchView('matrix'); }
+            switchView('dashboard');
         };
 
-        function getTodayStr() { 
-            const d = new Date(); 
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        function loadData() {
-            try {
-                const t = localStorage.getItem('lvlup_tasks_v8'); const u = localStorage.getItem('lvlup_user_v8');
-                if(t) tasks = JSON.parse(t); 
-                if(u) userData = { ...userData, ...JSON.parse(u) };
-                else { tasks = [{ id: 1, title: 'Welcome!', category: 'Personal', priority: 'medium', type: 'task', repeat: 'once', date: getTodayStr(), time: '', completed: false, subtasks:[] }]; saveData(); }
-            } catch(e) { tasks=[]; }
-            updateUI();
-        }
-        function saveData() { localStorage.setItem('lvlup_tasks_v8', JSON.stringify(tasks)); localStorage.setItem('lvlup_user_v8', JSON.stringify(userData)); }
-
-        function checkStreak() {
-            const today = getTodayStr();
-            const last = userData.lastStreakDate;
-            if(!last) return;
-            const d1 = new Date(today); const d2 = new Date(last);
-            const diffDays = Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24));
-            if (diffDays > 1) { userData.streak = 0; saveData(); updateUI(); }
-        }
-
-        function updateStreak() {
-            const today = getTodayStr();
-            if (userData.lastStreakDate !== today) {
-                userData.streak++;
-                userData.lastStreakDate = today;
-                saveData(); updateUI(); spawnConfetti(window.innerWidth/2, window.innerHeight/2);
-            }
-        }
-
-        function updateUI() {
-            document.getElementById('header-greeting').innerText = userData.name;
-            document.getElementById('header-lvl').innerText = userData.level;
-            document.getElementById('header-streak').innerText = userData.streak;
-            document.getElementById('profile-level-lg').innerText = userData.level;
-            document.getElementById('profile-xp').innerText = userData.xp;
-            document.getElementById('profile-streak').innerText = userData.streak;
-            document.getElementById('inp-username').value = userData.name;
-            renderTasks();
-        }
-
-        function renderTasks() {
-            if(currentView === 'calendar') { renderCalendar(); return; }
-            if(currentView === 'matrix') { renderMatrix(); return; }
+        // --- 1. CORE LOGIC: PERIOD-BASED RESET ---
+        function checkMidnightReset() { 
+            const lastRunDate = localStorage.getItem('lastRun_v13'); 
+            const todayStr = getTodayStr();
+            const now = new Date(); 
             
-            const list = document.getElementById('task-list'); list.innerHTML = '';
+            if(lastRunDate !== todayStr) { 
+                
+                // A. Temporary Tasks: Delete if completed yesterday
+                tasks = tasks.filter(t => {
+                    if (t.repeat === 'once' && t.completed) return false; 
+                    return true;
+                });
+
+                // B. Routines: The "Fresh Start" Logic
+                tasks.forEach(t => { 
+                    if(t.repeat !== 'once' && t.completed) { 
+                        if (shouldResetRoutine(t, now)) {
+                            // Uncheck and Reset
+                            t.completed = false; 
+                            t.notifiedExact = false; 
+                            t.notified1H = false;
+                            if(t.subtasks) t.subtasks.forEach(s => s.done = false);
+
+                            // Schedule Next Occurrence
+                            t.date = calculateNextDate(t.date, t.repeat);
+                        }
+                    }
+                }); 
+                
+                saveData(); 
+                localStorage.setItem('lastRun_v13', todayStr); 
+                renderTasks(); 
+            } 
+        }
+
+        function shouldResetRoutine(task, todayDate) {
+            const taskDate = new Date(task.date); 
+            const todayTime = todayDate.getTime();
+
+            // 1. Daily: Reset if today is a different day
+            if (task.repeat === 'daily') {
+                return todayStr(todayDate) !== todayStr(taskDate);
+            }
+
+            // 2. Weekly: Reset if today is AFTER Sunday of the task's week
+            if (task.repeat === 'weekly') {
+                const day = taskDate.getDay(); 
+                const diffToSunday = day === 0 ? 0 : 7 - day; 
+                const endOfWeek = new Date(taskDate);
+                endOfWeek.setDate(taskDate.getDate() + diffToSunday);
+                endOfWeek.setHours(23, 59, 59, 999);
+                return todayTime > endOfWeek.getTime();
+            }
+            
+            // 3. Twice a Month (Semi-Monthly): 
+            // Reset on 15th (if in first half) OR End of Month (if in second half)
+            if (task.repeat === 'semi_monthly') {
+                const day = taskDate.getDate();
+                let resetTarget = new Date(taskDate);
+                
+                if (day <= 15) {
+                    // First half: Reset on the 15th
+                    resetTarget.setDate(15);
+                } else {
+                    // Second half: Reset on last day of month
+                    resetTarget = new Date(taskDate.getFullYear(), taskDate.getMonth() + 1, 0);
+                }
+                resetTarget.setHours(23, 59, 59, 999);
+                return todayTime > resetTarget.getTime();
+            }
+
+            // 4. Monthly: Reset if today is AFTER the last day of the month
+            if (task.repeat === 'monthly') {
+                const endOfMonth = new Date(taskDate.getFullYear(), taskDate.getMonth() + 1, 0);
+                endOfMonth.setHours(23, 59, 59, 999);
+                return todayTime > endOfMonth.getTime();
+            }
+            
+            // 5. Every 2 Months (Bi-monthly): Reset after 2 months
+            if (task.repeat === 'bimonthly') {
+                const endOfPeriod = new Date(taskDate.getFullYear(), taskDate.getMonth() + 2, 0);
+                endOfPeriod.setHours(23, 59, 59, 999);
+                return todayTime > endOfPeriod.getTime();
+            }
+
+            // 6. Yearly: Reset after Dec 31st
+            if (task.repeat === 'yearly') {
+                const endOfYear = new Date(taskDate.getFullYear(), 11, 31, 23, 59, 59);
+                return todayTime > endOfYear.getTime();
+            }
+
+            return false;
+        }
+
+        function calculateNextDate(currentDateStr, repeatType) {
+            let d = new Date(currentDateStr);
+            
+            if (repeatType === 'daily') d.setDate(d.getDate() + 1);
+            if (repeatType === 'weekly') d.setDate(d.getDate() + 7);
+            
+            if (repeatType === 'semi_monthly') {
+                // If 1st-15th -> Jump to 16th
+                // If 16th+ -> Jump to 1st of next month
+                if (d.getDate() <= 15) {
+                    d.setDate(16);
+                } else {
+                    d.setMonth(d.getMonth() + 1);
+                    d.setDate(1);
+                }
+            }
+
+            if (repeatType === 'monthly') d.setMonth(d.getMonth() + 1);
+            if (repeatType === 'bimonthly') d.setMonth(d.getMonth() + 2); 
+            if (repeatType === 'yearly') d.setFullYear(d.getFullYear() + 1);
+            
+            return todayStr(d);
+        }
+
+        function todayStr(d) {
+             const year = d.getFullYear();
+             const month = String(d.getMonth() + 1).padStart(2, '0');
+             const day = String(d.getDate()).padStart(2, '0');
+             return `${year}-${month}-${day}`;
+        }
+        function getTodayStr() { return todayStr(new Date()); }
+
+        // --- 2. DASHBOARD VISIBILITY ---
+        function renderTasks() {
+            const list = document.getElementById('list-view');
             const search = document.getElementById('search-input').value.toLowerCase();
             const today = getTodayStr();
-            
-            const titles = { 'all': 'Dashboard', 'daily': 'One-Time Tasks', 'routine': 'Habits & Routines' };
-            document.getElementById('view-title').innerHTML = `<span class="w-2 h-6 bg-brand-500 rounded-full"></span> ${titles[currentView]}`;
 
             let filtered = tasks.filter(t => {
                 if(search && !t.title.toLowerCase().includes(search)) return false;
-                if(currentView === 'all') return !t.completed || t.date === today || t.repeat !== 'once';
-                if(currentView === 'daily') return t.repeat === 'once' && t.date === today; 
-                if(currentView === 'routine') return t.repeat !== 'once';
+                
+                if(currentView === 'dashboard') {
+                    // Show One-Time Tasks (Active) OR Routines (Active/Done Today)
+                    if (t.repeat === 'once') return true; 
+                    if (t.repeat !== 'once') return t.date <= today;
+                }
+
+                if(currentView === 'tasks') return t.repeat === 'once'; 
+                if(currentView === 'routine') return t.repeat !== 'once'; 
                 return false;
             });
 
-            const priorityVal = { 'high': 3, 'medium': 2, 'low': 1 };
-            filtered.sort((a,b) => { 
-                if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                const pA = priorityVal[a.priority || 'medium']; const pB = priorityVal[b.priority || 'medium'];
-                if (pA !== pB) return pB - pA;
-                return (a.date + (a.time || "23:59")).localeCompare(b.date + (b.time || "23:59"));
-            });
-            
             document.getElementById('task-counter').innerText = `${filtered.length} ITEMS`;
-            if(filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
-            else { document.getElementById('empty-state').classList.add('hidden'); filtered.forEach((t, i) => list.innerHTML += createTaskHTML(t, today, i)); }
             
-            updateNavState();
+            const emptyState = document.getElementById('empty-state');
+            if(filtered.length === 0) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            if (currentView === 'dashboard') {
+                renderMatrix(filtered); 
+            } else {
+                list.innerHTML = '';
+                const priorityVal = { 'high': 3, 'medium': 2, 'low': 1 };
+                filtered.sort((a,b) => { 
+                    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                    const pA = priorityVal[a.priority || 'medium']; const pB = priorityVal[b.priority || 'medium'];
+                    if (pA !== pB) return pB - pA;
+                    return (a.date + (a.time || "23:59")).localeCompare(b.date + (b.time || "23:59"));
+                });
+                filtered.forEach((t, i) => list.innerHTML += createTaskHTML(t, today, i));
+            }
         }
 
-        function renderMatrix() {
-            document.getElementById('view-title').innerHTML = ``; // Hide dashboard title
+        // --- DATA LOAD ---
+        function loadData() {
+            const CURRENT_VER = 'v13'; 
+            let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
+            let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
+
+            if (loadedTasks) {
+                try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
+                if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
+            } else {
+                // Migration
+                const old = localStorage.getItem('lvlup_tasks_v12') || localStorage.getItem('lvlup_tasks_v11');
+                if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
+            }
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('lvlup_tasks_v13', JSON.stringify(tasks));
+            localStorage.setItem('lvlup_user_v13', JSON.stringify(userData));
+        }
+
+        // --- HELPERS ---
+        function switchView(v) { 
+            currentView = v; 
+            const isCalendar = (v === 'calendar');
+            document.getElementById('view-lists').classList.toggle('hidden', isCalendar); 
+            document.getElementById('view-calendar').classList.toggle('hidden', !isCalendar); 
+            if(!isCalendar) {
+                const titles = {'dashboard': 'Dashboard', 'tasks': 'Temporary Tasks', 'routine': 'My Routine'};
+                document.getElementById('view-title').innerHTML = `<span class="w-2 h-6 bg-brand-500 rounded-full"></span> ${titles[v]}`;
+                const isDashboard = (v === 'dashboard');
+                document.getElementById('matrix-view').classList.toggle('hidden', !isDashboard);
+                document.getElementById('list-view').classList.toggle('hidden', isDashboard);
+                renderTasks();
+            } else { renderCalendar(); }
+            updateNavState();
+        }
+        function updateNavState() { 
+            ['dashboard','tasks','routine','calendar'].forEach(id => { 
+                const el = document.getElementById('nav-'+id); 
+                if(currentView === id) { el.classList.add('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.remove('text-slate-400'); } 
+                else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); } 
+            }); 
+        }
+        function renderMatrix(filteredTasks) {
             ['q1','q2','q3','q4'].forEach(q => document.getElementById('matrix-'+q).innerHTML = '');
             const today = getTodayStr();
-            
-            tasks.forEach((t, i) => {
-                if(t.completed) return; // Matrix only shows pending
-                const isUrgent = t.date <= today;
-                const isImportant = t.priority === 'high';
-                
+            filteredTasks.forEach((t, i) => {
+                const isUrgent = t.date <= today; const isImportant = t.priority === 'high';
                 let target = 'q4';
-                if(isUrgent && isImportant) target = 'q1';
-                else if(!isUrgent && isImportant) target = 'q2';
-                else if(isUrgent && !isImportant) target = 'q3';
-                
+                if(isUrgent && isImportant) target = 'q1'; else if(!isUrgent && isImportant) target = 'q2'; else if(isUrgent && !isImportant) target = 'q3';
                 document.getElementById('matrix-'+target).innerHTML += createTaskHTML(t, today, i);
             });
-            updateNavState();
         }
-
         function createTaskHTML(t, today, index) {
             const color = CATEGORIES[t.category] || 'gray';
             const icon = t.repeat !== 'once' ? 'ph-arrows-clockwise' : 'ph-check';
-            const priorityColors = { 'high': 'border-l-4 border-l-red-500', 'medium': '', 'low': '' };
-            const priorityClass = priorityColors[t.priority || 'medium'];
-            
-            // Subtask Progress
+            const priorityClass = t.priority === 'high' ? 'border-l-4 border-l-red-500' : '';
             let subInfo = '';
             if(t.subtasks && t.subtasks.length > 0) {
-                const done = t.subtasks.filter(s => s.done).length;
-                const total = t.subtasks.length;
-                const pct = (done/total)*100;
+                const done = t.subtasks.filter(s => s.done).length; const pct = (done/t.subtasks.length)*100;
                 subInfo = `<div class="mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-24"><div class="h-full bg-brand-400" style="width:${pct}%"></div></div>`;
             }
-
             let overdueBadge = '';
             if(t.repeat === 'once' && !t.completed && t.date < today) {
                 const diff = Math.ceil((new Date(today) - new Date(t.date)) / (86400000));
                 overdueBadge = `<span class="ml-2 text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md animate-pulse">${diff} DAYS LATE</span>`;
             }
-            
             const btnClass = t.completed ? 'bg-slate-200 dark:bg-slate-800 text-slate-400' : 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-500';
             const titleClass = t.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-800 dark:text-white';
-
             return `<div class="group flex items-start bg-white dark:bg-dark-surface2 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-border ${priorityClass} animate-enter stagger-${(index%5)+1} relative overflow-hidden transition-all hover:border-brand-300 mb-2" onclick="editTask(${t.id})">
                 <button onclick="toggleTask(${t.id}, event)" class="w-10 h-10 mt-1 rounded-xl flex items-center justify-center mr-4 transition-all ${btnClass} flex-shrink-0"><i class="ph-bold ${icon} text-lg transform transition-transform active:scale-75"></i></button>
                 <div class="flex-1 min-w-0 pt-1">
                     <div class="flex items-center gap-2 mb-0.5">
                         <span class="text-[10px] font-bold uppercase text-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 px-2 py-0.5 rounded-md">${t.category}</span>
                         ${t.priority === 'high' ? '<span class="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i></span>' : ''}
+                         ${t.time ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${formatTime(t.time)}</span>` : ''}
                     </div>
                     <div><h3 class="font-bold ${titleClass} truncate leading-tight">${t.title}</h3>${overdueBadge}</div>
                     ${subInfo}
@@ -537,65 +655,7 @@
                 </div>
             </div>`;
         }
-
-        // --- SUBTASK & MAGIC WAND ---
-        function generateSubtasks() {
-            const title = document.getElementById('inp-title').value.toLowerCase();
-            const container = document.getElementById('subtask-container');
-            const list = document.getElementById('subtask-list');
-            if(!title) return alert("Enter a title first!");
-            
-            // AI Lite Dictionary
-            let steps = [];
-            if(title.includes('buy') || title.includes('shop')) steps = ["Compare prices", "Read reviews", "Purchase item", "Save receipt"];
-            else if(title.includes('plan')) steps = ["Create guest list", "Set budget", "Pick venue", "Send invites"];
-            else if(title.includes('study') || title.includes('read')) steps = ["Read material", "Highlight key points", "Create flashcards", "Review notes"];
-            else if(title.includes('clean')) steps = ["Gather supplies", "Declutter area", "Wipe surfaces", "Vacuum/Mop"];
-            else if(title.includes('workout') || title.includes('gym')) steps = ["Warm up", "Main set", "Cool down", "Stretch"];
-            else steps = ["Step 1: Preparation", "Step 2: Execution", "Step 3: Review"]; // Fallback
-
-            // Clear and add
-            currentSubtasks = steps.map(txt => ({ text: txt, done: false }));
-            renderSubtasksEdit();
-            container.classList.remove('hidden');
-        }
-
-        function renderSubtasksEdit() {
-            const list = document.getElementById('subtask-list');
-            list.innerHTML = '';
-            currentSubtasks.forEach((s, idx) => {
-                list.innerHTML += `<div class="flex items-center gap-2">
-                    <input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleSubEdit(${idx})" class="rounded text-brand-600 focus:ring-brand-500">
-                    <input type="text" value="${s.text}" onchange="updateSubText(${idx}, this.value)" class="flex-1 bg-transparent border-none text-xs font-bold text-slate-600 dark:text-slate-300 outline-none">
-                    <button onclick="removeSub(${idx})" type="button" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x"></i></button>
-                </div>`;
-            });
-            document.getElementById('subtask-container').classList.toggle('hidden', currentSubtasks.length === 0);
-        }
-        function toggleSubEdit(idx) { currentSubtasks[idx].done = !currentSubtasks[idx].done; }
-        function updateSubText(idx, val) { currentSubtasks[idx].text = val; }
-        function removeSub(idx) { currentSubtasks.splice(idx, 1); renderSubtasksEdit(); }
-
-        // --- HEATMAP ---
-        function renderHeatmap() {
-            const container = document.getElementById('heatmap-container');
-            container.innerHTML = '';
-            // Render last 28 days (4 weeks)
-            for(let i=27; i>=0; i--) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0]; // "2023-10-01"
-                const count = userData.history[dateStr] || 0;
-                
-                let colorClass = "bg-slate-200 dark:bg-slate-700"; // Empty
-                if(count > 0) colorClass = "bg-brand-200 dark:bg-brand-900";
-                if(count > 2) colorClass = "bg-brand-400 dark:bg-brand-700";
-                if(count > 5) colorClass = "bg-brand-600 dark:bg-brand-500";
-                
-                container.innerHTML += `<div class="heatmap-cell ${colorClass}" title="${dateStr}: ${count} tasks"></div>`;
-            }
-        }
-
-        // --- TASK OPERATIONS ---
+        
         function handleSaveTask(e) {
             e.preventDefault();
             const title = document.getElementById('inp-title').value;
@@ -605,35 +665,17 @@
             const repeat = document.getElementById('inp-repeat').value;
             const date = document.getElementById('inp-date').value;
             const time = document.getElementById('inp-time').value;
-
-            const newTask = { id: editingId || Date.now(), title, category: cat, priority, type, repeat, date, time, subtasks: currentSubtasks };
-            
-            if(editingId) { 
-                const idx = tasks.findIndex(t => t.id === editingId); 
-                if(idx > -1) tasks[idx] = { ...tasks[idx], ...newTask }; 
-            } else { 
-                tasks.push({ ...newTask, completed: false, lastCompleted: null, notified: false }); 
-            }
+            const newTask = { id: editingId || Date.now(), title, category: cat, priority, type, repeat, date, time, subtasks: currentSubtasks, notifiedExact: false, notified1H: false };
+            if(editingId) { const idx = tasks.findIndex(t => t.id === editingId); if(idx > -1) tasks[idx] = { ...tasks[idx], ...newTask }; } 
+            else { tasks.push({ ...newTask, completed: false, lastCompleted: null }); }
             saveData(); closeModal(); renderTasks();
         }
-
         function toggleTask(id, e) {
             if(e) e.stopPropagation(); 
             const t = tasks.find(x => x.id === id); if(!t) return;
             const today = getTodayStr();
-            
-            if(!t.completed) { 
-                t.completed = true; t.lastCompleted = today; 
-                addXP(15); updateStreak(); 
-                if(e) spawnConfetti(e.clientX, e.clientY);
-                // Heatmap logic
-                userData.history[today] = (userData.history[today] || 0) + 1; 
-            } else { 
-                t.completed = false; t.lastCompleted = null; 
-                addXP(-15);
-                // Heatmap logic reverse
-                if(userData.history[today] > 0) userData.history[today]--;
-            }
+            if(!t.completed) { t.completed = true; t.lastCompleted = today; addXP(15); updateStreak(); if(e) spawnConfetti(e.clientX, e.clientY); userData.history[today] = (userData.history[today] || 0) + 1; } 
+            else { t.completed = false; t.lastCompleted = null; addXP(-15); if(userData.history[today] > 0) userData.history[today]--; }
             saveData(); renderTasks(); renderHeatmap();
         }
         function deleteTask(id, e) { e.stopPropagation(); if(confirm('Delete?')) { tasks = tasks.filter(t => t.id !== id); saveData(); renderTasks(); } }
@@ -642,50 +684,76 @@
             document.getElementById('inp-title').value = t.title; 
             document.getElementById('inp-category').value = t.category;
             document.getElementById('inp-priority').value = t.priority || 'medium';
-            document.getElementById('inp-repeat').value = t.repeat; 
-            updateRepeatDisplay(t.repeat);
+            
+            // Add extra options dynamically
+            const repeatSel = document.getElementById('inp-repeat');
+            if(!repeatSel.querySelector('option[value="semi_monthly"]')) {
+                const opt1 = document.createElement('option'); opt1.value = 'semi_monthly'; opt1.innerText = 'Twice a Month (1st & 16th)';
+                repeatSel.appendChild(opt1);
+                const opt2 = document.createElement('option'); opt2.value = 'bimonthly'; opt2.innerText = 'Every 2 Months';
+                repeatSel.appendChild(opt2);
+                const opt3 = document.createElement('option'); opt3.value = 'yearly'; opt3.innerText = 'Yearly';
+                repeatSel.appendChild(opt3);
+            }
+            
+            repeatSel.value = t.repeat; 
             document.getElementById('inp-date').value = t.date;
             document.getElementById('inp-time').value = t.time;
             const radios = document.getElementsByName('type'); radios.forEach(r => r.checked = (r.value === t.type));
-            
-            // Load Subtasks
             currentSubtasks = t.subtasks ? JSON.parse(JSON.stringify(t.subtasks)) : [];
-            renderSubtasksEdit();
+            renderSubtasksEdit(); updateDateDisplay(t.date); updateTimeDisplay(t.time); 
+            // Handle display text for repeat
+            let rText = t.repeat;
+            if(t.repeat === 'semi_monthly') rText = "Twice/Month";
+            else if(t.repeat === 'bimonthly') rText = "Every 2 Months";
+            else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
+            document.getElementById('repeat-display').innerText = rText;
 
-            updateDateDisplay(t.date); updateTimeDisplay(t.time);
-            document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update";
-            openModalLogic();
+            document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update"; openModalLogic();
         }
+        
+        function generateSubtasks() {
+            const title = document.getElementById('inp-title').value.toLowerCase();
+            const container = document.getElementById('subtask-container');
+            if(!title) return alert("Enter a title first!");
+            let steps = [];
+            if(title.includes('buy') || title.includes('shop')) steps = ["Compare prices", "Read reviews", "Purchase item", "Save receipt"];
+            else if(title.includes('plan')) steps = ["Create guest list", "Set budget", "Pick venue", "Send invites"];
+            else if(title.includes('study') || title.includes('read')) steps = ["Read material", "Highlight key points", "Create flashcards", "Review notes"];
+            else steps = ["Step 1: Preparation", "Step 2: Execution", "Step 3: Review"];
+            currentSubtasks = steps.map(txt => ({ text: txt, done: false }));
+            renderSubtasksEdit(); container.classList.remove('hidden');
+        }
+        function renderSubtasksEdit() {
+            const list = document.getElementById('subtask-list'); list.innerHTML = '';
+            currentSubtasks.forEach((s, idx) => {
+                list.innerHTML += `<div class="flex items-center gap-2"><input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleSubEdit(${idx})" class="rounded text-brand-600"><input type="text" value="${s.text}" onchange="updateSubText(${idx}, this.value)" class="flex-1 bg-transparent border-none text-xs font-bold text-slate-600 dark:text-slate-300 outline-none"><button onclick="removeSub(${idx})" type="button" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x"></i></button></div>`;
+            });
+            document.getElementById('subtask-container').classList.toggle('hidden', currentSubtasks.length === 0);
+        }
+        function toggleSubEdit(idx) { currentSubtasks[idx].done = !currentSubtasks[idx].done; }
+        function updateSubText(idx, val) { currentSubtasks[idx].text = val; }
+        function removeSub(idx) { currentSubtasks.splice(idx, 1); renderSubtasksEdit(); }
 
-        // --- FOCUS & NOTIFICATIONS (SAME AS BEFORE) ---
-        function openFocus(id, title, e) { e.stopPropagation(); currentFocusId = id; document.getElementById('focus-task-title').innerText = title; document.getElementById('focus-modal').classList.remove('hidden'); resetTimer(); }
-        function closeFocus() { stopTimer(); document.getElementById('focus-modal').classList.add('hidden'); }
-        function toggleTimer() { if(isFocusing) { clearInterval(focusInterval); isFocusing = false; document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-play"; } else { focusInterval = setInterval(() => { focusTime--; updateTimerDisplay(); if(focusTime <= 0) completeFocus(); }, 1000); isFocusing = true; document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-pause"; } }
-        function stopTimer() { clearInterval(focusInterval); isFocusing = false; resetTimer(); }
-        function resetTimer() { focusTime = 25 * 60; updateTimerDisplay(); document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-play"; }
-        function updateTimerDisplay() { const m = Math.floor(focusTime / 60); const s = focusTime % 60; document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`; const circle = document.getElementById('timer-circle'); const offset = FULL_DASH_ARRAY - (focusTime / (25 * 60)) * FULL_DASH_ARRAY; circle.style.strokeDashoffset = offset; }
-        function completeFocus() { stopTimer(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); alert("Focus Session Complete! 2x XP Awarded."); addXP(50); toggleTask(currentFocusId, null); closeFocus(); }
-        function startVoiceInput() { if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { alert("Voice input not supported."); return; } const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); const btn = document.querySelector('button[onclick="startVoiceInput()"]'); btn.classList.add('text-red-500', 'animate-pulse'); recognition.onresult = (event) => { document.getElementById('inp-title').value = event.results[0][0].transcript; btn.classList.remove('text-red-500', 'animate-pulse'); }; }
-        function initNotifications() { if ("Notification" in window && Notification.permission !== "granted") {} }
-        function requestNotificationPermission() { if (!("Notification" in window)) return; Notification.requestPermission().then(permission => { if (permission === "granted") new Notification("Notifications Enabled", { body: "We will remind you when tasks are due!", icon: 'https://cdn-icons-png.flaticon.com/512/9329/9329260.png' }); }); }
-        function checkReminders() { if (Notification.permission !== "granted") return; const now = new Date(); const timeStr = now.toTimeString().slice(0, 5); const dateStr = getTodayStr(); tasks.forEach(t => { if (t.date === dateStr && t.time === timeStr && !t.completed && !t.notified) { new Notification(`Task Due: ${t.title}`, { body: "It's time to get this done!", icon: 'https://cdn-icons-png.flaticon.com/512/13906/13906530.png' }); t.notified = true; saveData(); } }); }
-        function checkMidnightReset() { const lr = localStorage.getItem('lastRun_v8'); const td = getTodayStr(); if(lr !== td) { tasks.forEach(t => { if(t.repeat !== 'once') { t.completed = false; t.notified = false; } }); saveData(); localStorage.setItem('lastRun_v8', td); renderTasks(); } }
+        function updateUI() { document.getElementById('header-greeting').innerText = userData.name; document.getElementById('header-lvl').innerText = userData.level; document.getElementById('header-streak').innerText = userData.streak; document.getElementById('profile-xp').innerText = userData.xp; document.getElementById('inp-username').value = userData.name; renderTasks(); }
+        function checkStreak() { const today = getTodayStr(); const last = userData.lastStreakDate; if(!last) return; const diffDays = Math.ceil(Math.abs(new Date(today) - new Date(last)) / (1000 * 60 * 60 * 24)); if (diffDays > 1) { userData.streak = 0; saveData(); updateUI(); } }
+        function updateStreak() { const today = getTodayStr(); if (userData.lastStreakDate !== today) { userData.streak++; userData.lastStreakDate = today; saveData(); updateUI(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); } }
         function addXP(amount) { userData.xp += amount; if(userData.xp < 0) userData.xp = 0; if(userData.xp >= Math.pow(userData.level, 2) * 100) { userData.level++; document.getElementById('new-level-display').innerText = userData.level; document.getElementById('levelup-modal').classList.remove('hidden'); } saveData(); updateUI(); }
-
-        // --- CORE UI ---
-        function openModal() { editingId = null; document.querySelector('form').reset(); currentSubtasks = []; renderSubtasksEdit(); document.getElementById('inp-date').value = getTodayStr(); updateDateDisplay(getTodayStr()); updateTimeDisplay(''); updateRepeatDisplay('once'); document.getElementById('modal-title').innerText = "New Task"; document.getElementById('btn-save-text').innerText = "Save Task"; document.getElementById('inp-repeat').value = currentView === 'routine' ? 'daily' : 'once'; openModalLogic(); }
+        function renderHeatmap() { const container = document.getElementById('heatmap-container'); container.innerHTML = ''; for(let i=27; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0]; const count = userData.history[dateStr] || 0; let colorClass = count > 0 ? (count > 2 ? 'bg-brand-400' : 'bg-brand-200') : 'bg-slate-200 dark:bg-slate-700'; container.innerHTML += `<div class="heatmap-cell ${colorClass}" title="${dateStr}: ${count}"></div>`; } }
+        
+        function openModal() { editingId = null; document.querySelector('form').reset(); currentSubtasks = []; renderSubtasksEdit(); document.getElementById('inp-date').value = getTodayStr(); updateDateDisplay(getTodayStr()); updateTimeDisplay(''); document.getElementById('modal-title').innerText = "New Task"; document.getElementById('btn-save-text').innerText = "Save Task"; document.getElementById('inp-repeat').value = 'once'; openModalLogic(); }
         function openModalLogic() { const m = document.getElementById('modal-overlay'), c = document.getElementById('modal-content'); m.classList.remove('hidden'); setTimeout(()=>m.classList.remove('opacity-0'),10); c.classList.remove('translate-y-full'); }
         function closeModal() { const m = document.getElementById('modal-overlay'), c = document.getElementById('modal-content'); c.classList.add('translate-y-full'); m.classList.add('opacity-0'); setTimeout(()=>m.classList.add('hidden'),300); }
-        function updateNavState() { ['all','matrix','routine','calendar'].forEach(id => { const el = document.getElementById('nav-'+id); if(currentView === id) { el.classList.add('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.remove('text-slate-400'); } else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); } }); }
-        function switchView(v) { currentView = v; updateUI(); 
-            document.getElementById('view-lists').classList.toggle('hidden', v !== 'all' && v !== 'daily' && v !== 'routine'); 
-            document.getElementById('view-calendar').classList.toggle('hidden', v !== 'calendar'); 
-            document.getElementById('view-matrix').classList.toggle('hidden', v !== 'matrix');
-            if(v==='calendar') renderCalendar(); if(v==='matrix') renderMatrix();
-        }
         function updateDateDisplay(val) { if(!val) return; const [y,m,d] = val.split('-'); const dateObj = new Date(y, m-1, d); document.getElementById('date-display').innerText = (val === getTodayStr()) ? "Today" : dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
         function updateTimeDisplay(val) { document.getElementById('time-display').innerText = val ? formatTime(val) : 'Anytime'; }
-        function updateRepeatDisplay(val) { document.getElementById('repeat-display').innerText = val.charAt(0).toUpperCase() + val.slice(1); document.getElementById('inp-repeat').value = val; }
+        function updateRepeatDisplay(val) { 
+             let rText = val;
+             if(val === 'semi_monthly') rText = "Twice/Month";
+             else if(val === 'bimonthly') rText = "Every 2 Months";
+             else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
+             document.getElementById('repeat-display').innerText = rText; 
+             document.getElementById('inp-repeat').value = val; 
+        }
         function formatTime(t) { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h); d.setMinutes(m); return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light'); }
         function openProfileModal() { document.getElementById('profile-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('profile-modal').classList.remove('opacity-0'),10); renderHeatmap(); }
@@ -693,33 +761,26 @@
         function saveProfile() { userData.name = document.getElementById('inp-username').value; saveData(); updateUI(); }
         function closeLevelUp() { document.getElementById('levelup-modal').classList.add('hidden'); }
         function spawnConfetti(x, y) { const c = ['#6366f1','#ec4899','#fbbf24']; for(let i=0;i<25;i++){ const p=document.createElement('div'); p.className='confetti'; p.style.left=x+'px'; p.style.top=y+'px'; p.style.backgroundColor=c[Math.floor(Math.random()*3)]; p.style.setProperty('--tx',(Math.random()-0.5)*200+'px'); p.style.setProperty('--ty',(Math.random()-0.5)*200+'px'); document.body.appendChild(p); setTimeout(()=>p.remove(),800); } }
+        function startVoiceInput() { if (!('webkitSpeechRecognition' in window)) return alert("Not supported"); const recognition = new webkitSpeechRecognition(); recognition.lang = 'en-US'; recognition.start(); recognition.onresult = (e) => { document.getElementById('inp-title').value = e.results[0][0].transcript; }; }
+        function initNotifications() { if ("Notification" in window && Notification.permission !== "granted") {} }
+        function requestNotificationPermission() { if (!("Notification" in window)) return; Notification.requestPermission().then(permission => { if (permission === "granted") new Notification("Notifications Enabled"); }); }
+        
+        function openFocus(id, title, e) { e.stopPropagation(); currentFocusId = id; document.getElementById('focus-task-title').innerText = title; document.getElementById('focus-modal').classList.remove('hidden'); resetTimer(); }
+        function closeFocus() { stopTimer(); document.getElementById('focus-modal').classList.add('hidden'); }
+        function toggleTimer() { if(isFocusing) { clearInterval(focusInterval); isFocusing = false; document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-play"; } else { focusInterval = setInterval(() => { focusTime--; updateTimerDisplay(); if(focusTime <= 0) completeFocus(); }, 1000); isFocusing = true; document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-pause"; } }
+        function stopTimer() { clearInterval(focusInterval); isFocusing = false; resetTimer(); }
+        function resetTimer() { focusTime = 25 * 60; updateTimerDisplay(); document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-play"; }
+        function updateTimerDisplay() { const m = Math.floor(focusTime / 60); const s = focusTime % 60; document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`; const circle = document.getElementById('timer-circle'); const offset = FULL_DASH_ARRAY - (focusTime / (25 * 60)) * FULL_DASH_ARRAY; circle.style.strokeDashoffset = offset; }
+        function completeFocus() { stopTimer(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); alert("Focus Complete! 2x XP"); addXP(50); toggleTask(currentFocusId, null); closeFocus(); }
 
-        function renderCalendar() {
-             const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); grid.innerHTML = '';
-             const year = viewDate.getFullYear(), month = viewDate.getMonth(); label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-             const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
-             for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>';
-             for(let d=1; d<=daysInMonth; d++) {
-                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                 const isSel = dateStr === selectedCalendarDate, isToday = dateStr === getTodayStr();
-                 let cls = "h-8 flex items-center justify-center rounded-lg transition-colors cursor-pointer ";
-                 if(isSel) cls += "bg-brand-600 text-white shadow-md font-bold"; else if(isToday) cls += "bg-brand-100 text-brand-700 font-bold"; else cls += "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700";
-                 grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="${cls} relative">${d}</div>`;
-             }
-             renderSelectedDay();
-        }
+        function renderCalendar() { const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); grid.innerHTML = ''; const year = viewDate.getFullYear(), month = viewDate.getMonth(); label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(); for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>'; for(let d=1; d<=daysInMonth; d++) { const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const isSel = dateStr === selectedCalendarDate, isToday = dateStr === getTodayStr(); let cls = isSel ? "bg-brand-600 text-white" : (isToday ? "bg-brand-100 text-brand-700" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"); grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="h-8 flex items-center justify-center rounded-lg cursor-pointer ${cls}">${d}</div>`; } renderSelectedDay(); }
         function selDate(d) { selectedCalendarDate = d; renderCalendar(); }
         function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); renderCalendar(); }
-        function renderSelectedDay() {
-             const list = document.getElementById('selected-day-list'); list.innerHTML = '';
-             // Use same filter as All view but specific day
-             const dTasks = tasks.filter(t => (t.repeat==='once' && t.date===selectedCalendarDate) || (t.repeat!=='once' && isTaskDue(t, selectedCalendarDate)));
-             document.getElementById('selected-date-label').innerText = new Date(selectedCalendarDate).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-             if(dTasks.length===0) list.innerHTML = '<p class="text-xs text-slate-400 italic">No tasks.</p>';
-             else dTasks.forEach((t,i) => list.innerHTML += createTaskHTML(t, selectedCalendarDate, i));
-        }
-        function isTaskDue(t, viewDateStr) { if(t.repeat === 'once') return t.date === viewDateStr; const start = new Date(t.date); start.setHours(0,0,0,0); const current = new Date(viewDateStr); current.setHours(0,0,0,0); if(current < start) return false; if(t.repeat === 'daily') return true; if(t.repeat === 'weekly') return start.getDay() === current.getDay(); if(t.repeat === 'monthly') return start.getDate() === current.getDate(); return false; }
-        function exportData() { const s = JSON.stringify({tasks,userData}); const a = document.createElement('a'); a.href='data:application/json,'+encodeURIComponent(s); a.download='lvlup_v8_backup.json'; a.click(); }
+        function renderSelectedDay() { const list = document.getElementById('selected-day-list'); list.innerHTML = ''; const dTasks = tasks.filter(t => (t.repeat==='once' && t.date===selectedCalendarDate) || (t.repeat!=='once' && t.date <= selectedCalendarDate)); if(dTasks.length===0) list.innerHTML = '<p class="text-xs text-slate-400 italic">No tasks.</p>'; else dTasks.forEach((t,i) => list.innerHTML += createTaskHTML(t, selectedCalendarDate, i)); }
+        
+        function checkReminders() { if (Notification.permission !== "granted") return; const now = new Date(); const currentHour = now.getHours(); const currentMin = now.getMinutes(); const todayStr = getTodayStr(); const currentTotalMinutes = (currentHour * 60) + currentMin; if (currentHour === 6 && userData.lastBriefingDate !== todayStr) { const tasksToday = tasks.filter(t => t.date === todayStr && !t.completed).length; if (tasksToday > 0) { sendNotification("Good Morning!", `You have ${tasksToday} tasks today.`); userData.lastBriefingDate = todayStr; saveData(); } } tasks.forEach(t => { if (t.completed || t.date !== todayStr || !t.time) return; const [h, m] = t.time.split(':').map(Number); const taskTotalMinutes = (h * 60) + m; if (taskTotalMinutes === currentTotalMinutes && !t.notifiedExact) { sendNotification(`It's Time: ${t.title}`, "Due now!"); t.notifiedExact = true; saveData(); } }); }
+        function sendNotification(title, body) { try { NOTIFICATION_SOUND.currentTime = 0; NOTIFICATION_SOUND.play().catch(e=>{}); } catch(e) {} new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/13906/13906530.png' }); }
+        function exportData() { const s = JSON.stringify({tasks,userData}); const a = document.createElement('a'); a.href='data:application/json,'+encodeURIComponent(s); a.download='lvlup_backup.json'; a.click(); }
         function importData(inp) { const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result); tasks=d.tasks||[]; userData=d.userData||{name:'User',xp:0,level:1}; saveData(); updateUI(); alert("Success!"); closeProfileModal();}catch(err){alert("Error");}}; r.readAsText(f); }
     </script>
 </body>
