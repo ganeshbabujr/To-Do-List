@@ -401,13 +401,12 @@
 
         // --- 1. CORE LOGIC: PERIOD-BASED RESET ---
         function checkMidnightReset() { 
-            const lastRunDate = localStorage.getItem('lastRun_v13'); 
+            const lastRunDate = localStorage.getItem('lastRun_v14'); 
             const todayStr = getTodayStr();
             const now = new Date(); 
             
             if(lastRunDate !== todayStr) { 
-                
-                // A. Temporary Tasks: Delete if completed yesterday
+                // A. Temporary Tasks: Delete if completed
                 tasks = tasks.filter(t => {
                     if (t.repeat === 'once' && t.completed) return false; 
                     return true;
@@ -417,20 +416,17 @@
                 tasks.forEach(t => { 
                     if(t.repeat !== 'once' && t.completed) { 
                         if (shouldResetRoutine(t, now)) {
-                            // Uncheck and Reset
                             t.completed = false; 
                             t.notifiedExact = false; 
                             t.notified1H = false;
                             if(t.subtasks) t.subtasks.forEach(s => s.done = false);
-
-                            // Schedule Next Occurrence
                             t.date = calculateNextDate(t.date, t.repeat);
                         }
                     }
                 }); 
                 
                 saveData(); 
-                localStorage.setItem('lastRun_v13', todayStr); 
+                localStorage.setItem('lastRun_v14', todayStr); 
                 renderTasks(); 
             } 
         }
@@ -439,12 +435,8 @@
             const taskDate = new Date(task.date); 
             const todayTime = todayDate.getTime();
 
-            // 1. Daily: Reset if today is a different day
-            if (task.repeat === 'daily') {
-                return todayStr(todayDate) !== todayStr(taskDate);
-            }
+            if (task.repeat === 'daily') return todayStr(todayDate) !== todayStr(taskDate);
 
-            // 2. Weekly: Reset if today is AFTER Sunday of the task's week
             if (task.repeat === 'weekly') {
                 const day = taskDate.getDay(); 
                 const diffToSunday = day === 0 ? 0 : 7 - day; 
@@ -454,38 +446,27 @@
                 return todayTime > endOfWeek.getTime();
             }
             
-            // 3. Twice a Month (Semi-Monthly): 
-            // Reset on 15th (if in first half) OR End of Month (if in second half)
             if (task.repeat === 'semi_monthly') {
                 const day = taskDate.getDate();
                 let resetTarget = new Date(taskDate);
-                
-                if (day <= 15) {
-                    // First half: Reset on the 15th
-                    resetTarget.setDate(15);
-                } else {
-                    // Second half: Reset on last day of month
-                    resetTarget = new Date(taskDate.getFullYear(), taskDate.getMonth() + 1, 0);
-                }
+                if (day <= 15) resetTarget.setDate(15);
+                else resetTarget = new Date(taskDate.getFullYear(), taskDate.getMonth() + 1, 0);
                 resetTarget.setHours(23, 59, 59, 999);
                 return todayTime > resetTarget.getTime();
             }
 
-            // 4. Monthly: Reset if today is AFTER the last day of the month
             if (task.repeat === 'monthly') {
                 const endOfMonth = new Date(taskDate.getFullYear(), taskDate.getMonth() + 1, 0);
                 endOfMonth.setHours(23, 59, 59, 999);
                 return todayTime > endOfMonth.getTime();
             }
             
-            // 5. Every 2 Months (Bi-monthly): Reset after 2 months
             if (task.repeat === 'bimonthly') {
                 const endOfPeriod = new Date(taskDate.getFullYear(), taskDate.getMonth() + 2, 0);
                 endOfPeriod.setHours(23, 59, 59, 999);
                 return todayTime > endOfPeriod.getTime();
             }
 
-            // 6. Yearly: Reset after Dec 31st
             if (task.repeat === 'yearly') {
                 const endOfYear = new Date(taskDate.getFullYear(), 11, 31, 23, 59, 59);
                 return todayTime > endOfYear.getTime();
@@ -496,25 +477,15 @@
 
         function calculateNextDate(currentDateStr, repeatType) {
             let d = new Date(currentDateStr);
-            
             if (repeatType === 'daily') d.setDate(d.getDate() + 1);
             if (repeatType === 'weekly') d.setDate(d.getDate() + 7);
-            
             if (repeatType === 'semi_monthly') {
-                // If 1st-15th -> Jump to 16th
-                // If 16th+ -> Jump to 1st of next month
-                if (d.getDate() <= 15) {
-                    d.setDate(16);
-                } else {
-                    d.setMonth(d.getMonth() + 1);
-                    d.setDate(1);
-                }
+                if (d.getDate() <= 15) d.setDate(16);
+                else { d.setMonth(d.getMonth() + 1); d.setDate(1); }
             }
-
             if (repeatType === 'monthly') d.setMonth(d.getMonth() + 1);
             if (repeatType === 'bimonthly') d.setMonth(d.getMonth() + 2); 
             if (repeatType === 'yearly') d.setFullYear(d.getFullYear() + 1);
-            
             return todayStr(d);
         }
 
@@ -526,7 +497,7 @@
         }
         function getTodayStr() { return todayStr(new Date()); }
 
-        // --- 2. DASHBOARD VISIBILITY ---
+        // --- 2. DASHBOARD & RENDER LOGIC ---
         function renderTasks() {
             const list = document.getElementById('list-view');
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -536,11 +507,9 @@
                 if(search && !t.title.toLowerCase().includes(search)) return false;
                 
                 if(currentView === 'dashboard') {
-                    // Show One-Time Tasks (Active) OR Routines (Active/Done Today)
                     if (t.repeat === 'once') return true; 
                     if (t.repeat !== 'once') return t.date <= today;
                 }
-
                 if(currentView === 'tasks') return t.repeat === 'once'; 
                 if(currentView === 'routine') return t.repeat !== 'once'; 
                 return false;
@@ -567,84 +536,76 @@
             }
         }
 
-        // --- DATA LOAD ---
-        function loadData() {
-            const CURRENT_VER = 'v13'; 
-            let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
-            let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
-
-            if (loadedTasks) {
-                try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
-                if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
-            } else {
-                // Migration
-                const old = localStorage.getItem('lvlup_tasks_v12') || localStorage.getItem('lvlup_tasks_v11');
-                if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
-            }
-            updateUI();
-        }
-
-        function saveData() {
-            localStorage.setItem('lvlup_tasks_v13', JSON.stringify(tasks));
-            localStorage.setItem('lvlup_user_v13', JSON.stringify(userData));
-        }
-
-        // --- HELPERS ---
-        function switchView(v) { 
-            currentView = v; 
-            const isCalendar = (v === 'calendar');
-            document.getElementById('view-lists').classList.toggle('hidden', isCalendar); 
-            document.getElementById('view-calendar').classList.toggle('hidden', !isCalendar); 
-            if(!isCalendar) {
-                const titles = {'dashboard': 'Dashboard', 'tasks': 'Temporary Tasks', 'routine': 'My Routine'};
-                document.getElementById('view-title').innerHTML = `<span class="w-2 h-6 bg-brand-500 rounded-full"></span> ${titles[v]}`;
-                const isDashboard = (v === 'dashboard');
-                document.getElementById('matrix-view').classList.toggle('hidden', !isDashboard);
-                document.getElementById('list-view').classList.toggle('hidden', isDashboard);
-                renderTasks();
-            } else { renderCalendar(); }
-            updateNavState();
-        }
-        function updateNavState() { 
-            ['dashboard','tasks','routine','calendar'].forEach(id => { 
-                const el = document.getElementById('nav-'+id); 
-                if(currentView === id) { el.classList.add('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.remove('text-slate-400'); } 
-                else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); } 
-            }); 
-        }
         function renderMatrix(filteredTasks) {
             ['q1','q2','q3','q4'].forEach(q => document.getElementById('matrix-'+q).innerHTML = '');
             const today = getTodayStr();
+            
             filteredTasks.forEach((t, i) => {
-                const isUrgent = t.date <= today; const isImportant = t.priority === 'high';
-                let target = 'q4';
-                if(isUrgent && isImportant) target = 'q1'; else if(!isUrgent && isImportant) target = 'q2'; else if(isUrgent && !isImportant) target = 'q3';
+                const isUrgent = t.date <= today;
+                
+                // --- FIX 1: STRICT PRIORITY LOGIC ---
+                let target = 'q3'; // Default to Normal (Medium)
+                
+                if (t.priority === 'high') {
+                    target = isUrgent ? 'q1' : 'q2';
+                } else if (t.priority === 'low') {
+                    target = 'q4'; // ALWAYS go to Low bucket, regardless of date
+                } else {
+                    // Medium Priority stays in q3 (Normal)
+                    target = 'q3';
+                }
+                
                 document.getElementById('matrix-'+target).innerHTML += createTaskHTML(t, today, i);
             });
         }
+
         function createTaskHTML(t, today, index) {
             const color = CATEGORIES[t.category] || 'gray';
             const icon = t.repeat !== 'once' ? 'ph-arrows-clockwise' : 'ph-check';
             const priorityClass = t.priority === 'high' ? 'border-l-4 border-l-red-500' : '';
+            
+            // Subtasks
             let subInfo = '';
             if(t.subtasks && t.subtasks.length > 0) {
                 const done = t.subtasks.filter(s => s.done).length; const pct = (done/t.subtasks.length)*100;
                 subInfo = `<div class="mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-24"><div class="h-full bg-brand-400" style="width:${pct}%"></div></div>`;
             }
+            
+            // Overdue Badge
             let overdueBadge = '';
             if(t.repeat === 'once' && !t.completed && t.date < today) {
                 const diff = Math.ceil((new Date(today) - new Date(t.date)) / (86400000));
                 overdueBadge = `<span class="ml-2 text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md animate-pulse">${diff} DAYS LATE</span>`;
             }
+
+            // --- FIX 2: DATE TAG LOGIC ---
+            let dateTag = '';
+            if(t.date === today) dateTag = 'Today';
+            else {
+                // Calculate Tomorrow
+                let tmrw = new Date(); tmrw.setDate(tmrw.getDate() + 1);
+                const tmrwStr = todayStr(tmrw);
+                
+                if(t.date === tmrwStr) dateTag = 'Tomorrow';
+                else {
+                    const dObj = new Date(t.date);
+                    dateTag = dObj.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+                }
+            }
+
             const btnClass = t.completed ? 'bg-slate-200 dark:bg-slate-800 text-slate-400' : 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-500';
             const titleClass = t.completed ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-800 dark:text-white';
+            
             return `<div class="group flex items-start bg-white dark:bg-dark-surface2 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-dark-border ${priorityClass} animate-enter stagger-${(index%5)+1} relative overflow-hidden transition-all hover:border-brand-300 mb-2" onclick="editTask(${t.id})">
                 <button onclick="toggleTask(${t.id}, event)" class="w-10 h-10 mt-1 rounded-xl flex items-center justify-center mr-4 transition-all ${btnClass} flex-shrink-0"><i class="ph-bold ${icon} text-lg transform transition-transform active:scale-75"></i></button>
                 <div class="flex-1 min-w-0 pt-1">
                     <div class="flex items-center gap-2 mb-0.5">
                         <span class="text-[10px] font-bold uppercase text-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 px-2 py-0.5 rounded-md">${t.category}</span>
                         ${t.priority === 'high' ? '<span class="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i></span>' : ''}
-                         ${t.time ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${formatTime(t.time)}</span>` : ''}
+                        
+                        <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-calendar-blank"></i> ${dateTag}</span>
+                        
+                        ${t.time ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${formatTime(t.time)}</span>` : ''}
                     </div>
                     <div><h3 class="font-bold ${titleClass} truncate leading-tight">${t.title}</h3>${overdueBadge}</div>
                     ${subInfo}
@@ -656,6 +617,27 @@
             </div>`;
         }
         
+        // --- DATA OPERATIONS ---
+        function loadData() {
+            const CURRENT_VER = 'v14'; 
+            let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
+            let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
+
+            if (loadedTasks) {
+                try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
+                if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
+            } else {
+                const old = localStorage.getItem('lvlup_tasks_v13') || localStorage.getItem('lvlup_tasks_v12');
+                if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
+            }
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('lvlup_tasks_v14', JSON.stringify(tasks));
+            localStorage.setItem('lvlup_user_v14', JSON.stringify(userData));
+        }
+
         function handleSaveTask(e) {
             e.preventDefault();
             const title = document.getElementById('inp-title').value;
@@ -684,34 +666,24 @@
             document.getElementById('inp-title').value = t.title; 
             document.getElementById('inp-category').value = t.category;
             document.getElementById('inp-priority').value = t.priority || 'medium';
-            
-            // Add extra options dynamically
             const repeatSel = document.getElementById('inp-repeat');
             if(!repeatSel.querySelector('option[value="semi_monthly"]')) {
-                const opt1 = document.createElement('option'); opt1.value = 'semi_monthly'; opt1.innerText = 'Twice a Month (1st & 16th)';
-                repeatSel.appendChild(opt1);
-                const opt2 = document.createElement('option'); opt2.value = 'bimonthly'; opt2.innerText = 'Every 2 Months';
-                repeatSel.appendChild(opt2);
-                const opt3 = document.createElement('option'); opt3.value = 'yearly'; opt3.innerText = 'Yearly';
-                repeatSel.appendChild(opt3);
+                const opt1 = document.createElement('option'); opt1.value = 'semi_monthly'; opt1.innerText = 'Twice a Month (1st & 16th)'; repeatSel.appendChild(opt1);
+                const opt2 = document.createElement('option'); opt2.value = 'bimonthly'; opt2.innerText = 'Every 2 Months'; repeatSel.appendChild(opt2);
+                const opt3 = document.createElement('option'); opt3.value = 'yearly'; opt3.innerText = 'Yearly'; repeatSel.appendChild(opt3);
             }
-            
             repeatSel.value = t.repeat; 
             document.getElementById('inp-date').value = t.date;
             document.getElementById('inp-time').value = t.time;
             const radios = document.getElementsByName('type'); radios.forEach(r => r.checked = (r.value === t.type));
             currentSubtasks = t.subtasks ? JSON.parse(JSON.stringify(t.subtasks)) : [];
             renderSubtasksEdit(); updateDateDisplay(t.date); updateTimeDisplay(t.time); 
-            // Handle display text for repeat
-            let rText = t.repeat;
-            if(t.repeat === 'semi_monthly') rText = "Twice/Month";
-            else if(t.repeat === 'bimonthly') rText = "Every 2 Months";
-            else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
+            let rText = t.repeat; if(t.repeat === 'semi_monthly') rText = "Twice/Month"; else if(t.repeat === 'bimonthly') rText = "Every 2 Months"; else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
             document.getElementById('repeat-display').innerText = rText;
-
             document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update"; openModalLogic();
         }
         
+        // --- SUBTASKS, TIMER, ETC ---
         function generateSubtasks() {
             const title = document.getElementById('inp-title').value.toLowerCase();
             const container = document.getElementById('subtask-container');
@@ -747,12 +719,8 @@
         function updateDateDisplay(val) { if(!val) return; const [y,m,d] = val.split('-'); const dateObj = new Date(y, m-1, d); document.getElementById('date-display').innerText = (val === getTodayStr()) ? "Today" : dateObj.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
         function updateTimeDisplay(val) { document.getElementById('time-display').innerText = val ? formatTime(val) : 'Anytime'; }
         function updateRepeatDisplay(val) { 
-             let rText = val;
-             if(val === 'semi_monthly') rText = "Twice/Month";
-             else if(val === 'bimonthly') rText = "Every 2 Months";
-             else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
-             document.getElementById('repeat-display').innerText = rText; 
-             document.getElementById('inp-repeat').value = val; 
+             let rText = val; if(val === 'semi_monthly') rText = "Twice/Month"; else if(val === 'bimonthly') rText = "Every 2 Months"; else rText = rText.charAt(0).toUpperCase() + rText.slice(1);
+             document.getElementById('repeat-display').innerText = rText; document.getElementById('inp-repeat').value = val; 
         }
         function formatTime(t) { const [h,m]=t.split(':'); const d=new Date(); d.setHours(h); d.setMinutes(m); return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', document.documentElement.classList.contains('dark')?'dark':'light'); }
@@ -772,6 +740,30 @@
         function resetTimer() { focusTime = 25 * 60; updateTimerDisplay(); document.querySelector('#btn-timer-toggle i').className = "ph-fill ph-play"; }
         function updateTimerDisplay() { const m = Math.floor(focusTime / 60); const s = focusTime % 60; document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`; const circle = document.getElementById('timer-circle'); const offset = FULL_DASH_ARRAY - (focusTime / (25 * 60)) * FULL_DASH_ARRAY; circle.style.strokeDashoffset = offset; }
         function completeFocus() { stopTimer(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); alert("Focus Complete! 2x XP"); addXP(50); toggleTask(currentFocusId, null); closeFocus(); }
+        
+        // --- HELPERS & VIEW SWITCHING ---
+        function switchView(v) { 
+            currentView = v; 
+            const isCalendar = (v === 'calendar');
+            document.getElementById('view-lists').classList.toggle('hidden', isCalendar); 
+            document.getElementById('view-calendar').classList.toggle('hidden', !isCalendar); 
+            if(!isCalendar) {
+                const titles = {'dashboard': 'Dashboard', 'tasks': 'Temporary Tasks', 'routine': 'My Routine'};
+                document.getElementById('view-title').innerHTML = `<span class="w-2 h-6 bg-brand-500 rounded-full"></span> ${titles[v]}`;
+                const isDashboard = (v === 'dashboard');
+                document.getElementById('matrix-view').classList.toggle('hidden', !isDashboard);
+                document.getElementById('list-view').classList.toggle('hidden', isDashboard);
+                renderTasks();
+            } else { renderCalendar(); }
+            updateNavState();
+        }
+        function updateNavState() { 
+            ['dashboard','tasks','routine','calendar'].forEach(id => { 
+                const el = document.getElementById('nav-'+id); 
+                if(currentView === id) { el.classList.add('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.remove('text-slate-400'); } 
+                else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); } 
+            }); 
+        }
 
         function renderCalendar() { const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); grid.innerHTML = ''; const year = viewDate.getFullYear(), month = viewDate.getMonth(); label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(); for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>'; for(let d=1; d<=daysInMonth; d++) { const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const isSel = dateStr === selectedCalendarDate, isToday = dateStr === getTodayStr(); let cls = isSel ? "bg-brand-600 text-white" : (isToday ? "bg-brand-100 text-brand-700" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"); grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="h-8 flex items-center justify-center rounded-lg cursor-pointer ${cls}">${d}</div>`; } renderSelectedDay(); }
         function selDate(d) { selectedCalendarDate = d; renderCalendar(); }
