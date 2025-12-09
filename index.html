@@ -358,7 +358,7 @@
 
     </div>
 
-<script>
+    <script>
         const CATEGORIES = { 'Personal': 'green', 'Work': 'blue', 'Health': 'red', 'Study': 'amber', 'Social': 'purple' };
         const NOTIFICATION_SOUND = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         
@@ -401,7 +401,7 @@
 
         // --- 1. CORE LOGIC: PERIOD-BASED RESET ---
         function checkMidnightReset() { 
-            const lastRunDate = localStorage.getItem('lastRun_v14'); 
+            const lastRunDate = localStorage.getItem('lastRun_v15'); 
             const todayStr = getTodayStr();
             const now = new Date(); 
             
@@ -426,7 +426,7 @@
                 }); 
                 
                 saveData(); 
-                localStorage.setItem('lastRun_v14', todayStr); 
+                localStorage.setItem('lastRun_v15', todayStr); 
                 renderTasks(); 
             } 
         }
@@ -497,7 +497,7 @@
         }
         function getTodayStr() { return todayStr(new Date()); }
 
-        // --- 2. DASHBOARD & RENDER LOGIC ---
+        // --- 2. RENDER LOGIC ---
         function renderTasks() {
             const list = document.getElementById('list-view');
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -542,18 +542,10 @@
             
             filteredTasks.forEach((t, i) => {
                 const isUrgent = t.date <= today;
-                
-                // --- FIX 1: STRICT PRIORITY LOGIC ---
-                let target = 'q3'; // Default to Normal (Medium)
-                
-                if (t.priority === 'high') {
-                    target = isUrgent ? 'q1' : 'q2';
-                } else if (t.priority === 'low') {
-                    target = 'q4'; // ALWAYS go to Low bucket, regardless of date
-                } else {
-                    // Medium Priority stays in q3 (Normal)
-                    target = 'q3';
-                }
+                let target = 'q3'; 
+                if (t.priority === 'high') target = isUrgent ? 'q1' : 'q2';
+                else if (t.priority === 'low') target = 'q4'; 
+                else target = 'q3';
                 
                 document.getElementById('matrix-'+target).innerHTML += createTaskHTML(t, today, i);
             });
@@ -564,33 +556,27 @@
             const icon = t.repeat !== 'once' ? 'ph-arrows-clockwise' : 'ph-check';
             const priorityClass = t.priority === 'high' ? 'border-l-4 border-l-red-500' : '';
             
-            // Subtasks
             let subInfo = '';
             if(t.subtasks && t.subtasks.length > 0) {
                 const done = t.subtasks.filter(s => s.done).length; const pct = (done/t.subtasks.length)*100;
                 subInfo = `<div class="mt-2 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden w-24"><div class="h-full bg-brand-400" style="width:${pct}%"></div></div>`;
             }
             
-            // Overdue Badge
+            // Overdue Badge (Universal)
             let overdueBadge = '';
-            if(t.repeat === 'once' && !t.completed && t.date < today) {
+            if(!t.completed && t.date < today) {
                 const diff = Math.ceil((new Date(today) - new Date(t.date)) / (86400000));
                 overdueBadge = `<span class="ml-2 text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md animate-pulse">${diff} DAYS LATE</span>`;
             }
 
-            // --- FIX 2: DATE TAG LOGIC ---
+            // Date Tag
             let dateTag = '';
             if(t.date === today) dateTag = 'Today';
             else {
-                // Calculate Tomorrow
                 let tmrw = new Date(); tmrw.setDate(tmrw.getDate() + 1);
                 const tmrwStr = todayStr(tmrw);
-                
                 if(t.date === tmrwStr) dateTag = 'Tomorrow';
-                else {
-                    const dObj = new Date(t.date);
-                    dateTag = dObj.toLocaleDateString('en-US', {month:'short', day:'numeric'});
-                }
+                else dateTag = new Date(t.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
             }
 
             const btnClass = t.completed ? 'bg-slate-200 dark:bg-slate-800 text-slate-400' : 'bg-brand-600 text-white shadow-lg shadow-brand-500/30 hover:bg-brand-500';
@@ -602,9 +588,7 @@
                     <div class="flex items-center gap-2 mb-0.5">
                         <span class="text-[10px] font-bold uppercase text-${color}-500 bg-${color}-50 dark:bg-${color}-900/20 px-2 py-0.5 rounded-md">${t.category}</span>
                         ${t.priority === 'high' ? '<span class="text-[10px] font-bold text-red-500 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i></span>' : ''}
-                        
                         <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-calendar-blank"></i> ${dateTag}</span>
-                        
                         ${t.time ? `<span class="text-[10px] font-bold text-slate-400 flex items-center gap-1"><i class="ph-fill ph-clock"></i> ${formatTime(t.time)}</span>` : ''}
                     </div>
                     <div><h3 class="font-bold ${titleClass} truncate leading-tight">${t.title}</h3>${overdueBadge}</div>
@@ -617,9 +601,40 @@
             </div>`;
         }
         
+        // --- 3. CALENDAR WITH RED OVERDUE MARKER ---
+        function renderCalendar() { 
+            const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); 
+            grid.innerHTML = ''; 
+            const year = viewDate.getFullYear(), month = viewDate.getMonth(); 
+            label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); 
+            const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(); 
+            
+            const today = getTodayStr();
+
+            for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>'; 
+            
+            for(let d=1; d<=daysInMonth; d++) { 
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; 
+                const isSel = dateStr === selectedCalendarDate, isToday = dateStr === today; 
+                
+                const dayTasks = tasks.filter(t => t.date === dateStr && !t.completed);
+                const hasTask = dayTasks.length > 0;
+                
+                let marker = '';
+                if (hasTask) {
+                    if (dateStr < today) marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full"></span>`; // Overdue
+                    else marker = `<span class="absolute bottom-1 w-1.5 h-1.5 bg-brand-400 rounded-full"></span>`; // Future/Today
+                }
+
+                let cls = isSel ? "bg-brand-600 text-white" : (isToday ? "bg-brand-100 text-brand-700" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"); 
+                grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="h-8 flex items-center justify-center rounded-lg cursor-pointer ${cls} relative">${d}${marker}</div>`; 
+            } 
+            renderSelectedDay(); 
+        }
+
         // --- DATA OPERATIONS ---
         function loadData() {
-            const CURRENT_VER = 'v14'; 
+            const CURRENT_VER = 'v15'; 
             let loadedTasks = localStorage.getItem(`lvlup_tasks_${CURRENT_VER}`);
             let loadedUser = localStorage.getItem(`lvlup_user_${CURRENT_VER}`);
 
@@ -627,15 +642,15 @@
                 try { tasks = JSON.parse(loadedTasks); } catch(e) { tasks = []; }
                 if (loadedUser) { try { userData = { ...userData, ...JSON.parse(loadedUser) }; } catch(e) {} }
             } else {
-                const old = localStorage.getItem('lvlup_tasks_v13') || localStorage.getItem('lvlup_tasks_v12');
+                const old = localStorage.getItem('lvlup_tasks_v14') || localStorage.getItem('lvlup_tasks_v13');
                 if(old) { tasks = JSON.parse(old); saveData(); } else { tasks = []; }
             }
             updateUI();
         }
 
         function saveData() {
-            localStorage.setItem('lvlup_tasks_v14', JSON.stringify(tasks));
-            localStorage.setItem('lvlup_user_v14', JSON.stringify(userData));
+            localStorage.setItem('lvlup_tasks_v15', JSON.stringify(tasks));
+            localStorage.setItem('lvlup_user_v15', JSON.stringify(userData));
         }
 
         function handleSaveTask(e) {
@@ -683,7 +698,6 @@
             document.getElementById('modal-title').innerText = "Edit Task"; document.getElementById('btn-save-text').innerText = "Update"; openModalLogic();
         }
         
-        // --- SUBTASKS, TIMER, ETC ---
         function generateSubtasks() {
             const title = document.getElementById('inp-title').value.toLowerCase();
             const container = document.getElementById('subtask-container');
@@ -741,7 +755,15 @@
         function updateTimerDisplay() { const m = Math.floor(focusTime / 60); const s = focusTime % 60; document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0'+s : s}`; const circle = document.getElementById('timer-circle'); const offset = FULL_DASH_ARRAY - (focusTime / (25 * 60)) * FULL_DASH_ARRAY; circle.style.strokeDashoffset = offset; }
         function completeFocus() { stopTimer(); spawnConfetti(window.innerWidth/2, window.innerHeight/2); alert("Focus Complete! 2x XP"); addXP(50); toggleTask(currentFocusId, null); closeFocus(); }
         
-        // --- HELPERS & VIEW SWITCHING ---
+        function selDate(d) { selectedCalendarDate = d; renderCalendar(); }
+        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); renderCalendar(); }
+        function renderSelectedDay() { const list = document.getElementById('selected-day-list'); list.innerHTML = ''; const dTasks = tasks.filter(t => (t.repeat==='once' && t.date===selectedCalendarDate) || (t.repeat!=='once' && t.date <= selectedCalendarDate)); if(dTasks.length===0) list.innerHTML = '<p class="text-xs text-slate-400 italic">No tasks.</p>'; else dTasks.forEach((t,i) => list.innerHTML += createTaskHTML(t, selectedCalendarDate, i)); }
+        
+        function checkReminders() { if (Notification.permission !== "granted") return; const now = new Date(); const currentHour = now.getHours(); const currentMin = now.getMinutes(); const todayStr = getTodayStr(); const currentTotalMinutes = (currentHour * 60) + currentMin; if (currentHour === 6 && userData.lastBriefingDate !== todayStr) { const tasksToday = tasks.filter(t => t.date === todayStr && !t.completed).length; if (tasksToday > 0) { sendNotification("Good Morning!", `You have ${tasksToday} tasks today.`); userData.lastBriefingDate = todayStr; saveData(); } } tasks.forEach(t => { if (t.completed || t.date !== todayStr || !t.time) return; const [h, m] = t.time.split(':').map(Number); const taskTotalMinutes = (h * 60) + m; if (taskTotalMinutes === currentTotalMinutes && !t.notifiedExact) { sendNotification(`It's Time: ${t.title}`, "Due now!"); t.notifiedExact = true; saveData(); } }); }
+        function sendNotification(title, body) { try { NOTIFICATION_SOUND.currentTime = 0; NOTIFICATION_SOUND.play().catch(e=>{}); } catch(e) {} new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/13906/13906530.png' }); }
+        function exportData() { const s = JSON.stringify({tasks,userData}); const a = document.createElement('a'); a.href='data:application/json,'+encodeURIComponent(s); a.download='lvlup_backup.json'; a.click(); }
+        function importData(inp) { const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result); tasks=d.tasks||[]; userData=d.userData||{name:'User',xp:0,level:1}; saveData(); updateUI(); alert("Success!"); closeProfileModal();}catch(err){alert("Error");}}; r.readAsText(f); }
+        
         function switchView(v) { 
             currentView = v; 
             const isCalendar = (v === 'calendar');
@@ -764,16 +786,6 @@
                 else { el.classList.remove('text-brand-600', 'dark:text-brand-400', 'bg-slate-50', 'dark:bg-dark-surface2'); el.classList.add('text-slate-400'); } 
             }); 
         }
-
-        function renderCalendar() { const grid = document.getElementById('calendar-grid'), label = document.getElementById('cal-month-year'); grid.innerHTML = ''; const year = viewDate.getFullYear(), month = viewDate.getMonth(); label.innerText = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(); for(let i=0; i<firstDay; i++) grid.innerHTML += '<div></div>'; for(let d=1; d<=daysInMonth; d++) { const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const isSel = dateStr === selectedCalendarDate, isToday = dateStr === getTodayStr(); let cls = isSel ? "bg-brand-600 text-white" : (isToday ? "bg-brand-100 text-brand-700" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"); grid.innerHTML += `<div onclick="selDate('${dateStr}')" class="h-8 flex items-center justify-center rounded-lg cursor-pointer ${cls}">${d}</div>`; } renderSelectedDay(); }
-        function selDate(d) { selectedCalendarDate = d; renderCalendar(); }
-        function changeMonth(d) { viewDate.setMonth(viewDate.getMonth()+d); renderCalendar(); }
-        function renderSelectedDay() { const list = document.getElementById('selected-day-list'); list.innerHTML = ''; const dTasks = tasks.filter(t => (t.repeat==='once' && t.date===selectedCalendarDate) || (t.repeat!=='once' && t.date <= selectedCalendarDate)); if(dTasks.length===0) list.innerHTML = '<p class="text-xs text-slate-400 italic">No tasks.</p>'; else dTasks.forEach((t,i) => list.innerHTML += createTaskHTML(t, selectedCalendarDate, i)); }
-        
-        function checkReminders() { if (Notification.permission !== "granted") return; const now = new Date(); const currentHour = now.getHours(); const currentMin = now.getMinutes(); const todayStr = getTodayStr(); const currentTotalMinutes = (currentHour * 60) + currentMin; if (currentHour === 6 && userData.lastBriefingDate !== todayStr) { const tasksToday = tasks.filter(t => t.date === todayStr && !t.completed).length; if (tasksToday > 0) { sendNotification("Good Morning!", `You have ${tasksToday} tasks today.`); userData.lastBriefingDate = todayStr; saveData(); } } tasks.forEach(t => { if (t.completed || t.date !== todayStr || !t.time) return; const [h, m] = t.time.split(':').map(Number); const taskTotalMinutes = (h * 60) + m; if (taskTotalMinutes === currentTotalMinutes && !t.notifiedExact) { sendNotification(`It's Time: ${t.title}`, "Due now!"); t.notifiedExact = true; saveData(); } }); }
-        function sendNotification(title, body) { try { NOTIFICATION_SOUND.currentTime = 0; NOTIFICATION_SOUND.play().catch(e=>{}); } catch(e) {} new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/13906/13906530.png' }); }
-        function exportData() { const s = JSON.stringify({tasks,userData}); const a = document.createElement('a'); a.href='data:application/json,'+encodeURIComponent(s); a.download='lvlup_backup.json'; a.click(); }
-        function importData(inp) { const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result); tasks=d.tasks||[]; userData=d.userData||{name:'User',xp:0,level:1}; saveData(); updateUI(); alert("Success!"); closeProfileModal();}catch(err){alert("Error");}}; r.readAsText(f); }
     </script>
 </body>
 </html>
